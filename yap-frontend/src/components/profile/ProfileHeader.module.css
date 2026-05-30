@@ -1,0 +1,183 @@
+/* ─────────────────────────────────────────────
+   ProfileHeader.module.css
+   Banner → avatar → name → bio → stats
+   ───────────────────────────────────────────── */
+
+.header {
+  background: var(--bg-surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* ── Banner ── */
+.banner {
+  height: 120px;
+  background: var(--bg-elevated);
+  position: relative;
+  overflow: hidden;
+}
+
+.banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback gradient when no banner image */
+.bannerFallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(196, 151, 63, 0.15) 0%,
+    rgba(196, 151, 63, 0.04) 60%,
+    transparent 100%
+  );
+}
+
+/* ── Avatar — overlaps the banner ── */
+.avatarWrap {
+  position: relative;
+  margin: -28px 0 0 20px;
+  width: fit-content;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  border: 2.5px solid var(--bg-surface);
+  object-fit: cover;
+  background: var(--accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--accent);
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Subscribe button — top right of body ── */
+.bodyRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px 16px 0;
+  gap: 12px;
+}
+
+.identityBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.displayName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.username {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Subscribe button ── */
+.subscribeBtn {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--bg-base);
+  transition: opacity 0.15s;
+}
+
+.subscribeBtn:hover {
+  opacity: 0.88;
+}
+
+.subscribeBtn.subscribed {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 0.5px solid var(--accent-dim-md);
+}
+
+/* ── Bio ── */
+.bio {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  padding: 8px 16px 0;
+}
+
+/* ── Stats row ── */
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px 14px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.statNum {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  color: var(--text-muted);
+}
+
+.dot {
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 0 2px;
+}
+
+/* ── Tab bar ── */
+.tabs {
+  display: flex;
+  border-top: 0.5px solid var(--border-subtle);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--text-secondary);
+}
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}

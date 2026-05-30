@@ -1,0 +1,92 @@
+/* ─────────────────────────────────────────────
+   SpacePage.module.css
+   Custom layout: feed left, space sidebar right
+   ───────────────────────────────────────────── */
+
+/* Overrides the default AppLayout center padding
+   by stretching into a two-col layout */
+.layout {
+  display: flex;
+  gap: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+.feed {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 16px;          /* sticks while feed scrolls */
+}
+
+/* ── Space header (above the feed) ── */
+.spaceHeader {
+  margin-bottom: 16px;
+}
+
+.spaceTitle {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.spaceHandle {
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* ── Tab bar ── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 0.5px solid var(--border-subtle);
+  margin-bottom: 12px;
+}
+
+.tab {
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--text-secondary);
+}
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Loading / error / empty states ── */
+.state {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.emptyIcon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  opacity: 0.35;
+}

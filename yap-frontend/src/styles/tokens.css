@@ -1,0 +1,78 @@
+/* ─────────────────────────────────────────────
+   YAP  ·  Design Tokens
+   Dark mode (default) + Light mode override.
+   Toggle by adding class="light" to <html>.
+   ───────────────────────────────────────────── */
+
+:root {
+  /* ── Dark mode (midnight gold) ── */
+  --bg-base:        #13151F;
+  --bg-sidebar:     #161824;
+  --bg-surface:     #1A1D2E;
+  --bg-elevated:    #1E2136;
+
+  --accent:         #C4973F;
+  --accent-dim:     rgba(196, 151, 63, 0.12);
+  --accent-dim-md:  rgba(196, 151, 63, 0.20);
+
+  --text-primary:   #EDE9E0;
+  --text-secondary: rgba(237, 233, 224, 0.50);
+  --text-muted:     rgba(237, 233, 224, 0.28);
+
+  --border:         rgba(255, 255, 255, 0.07);
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+
+  /* ── Typography ── */
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans:  'DM Sans', system-ui, sans-serif;
+
+  /* ── Radii ── */
+  --radius-sm:   6px;
+  --radius-md:   9px;
+  --radius-lg:   12px;
+  --radius-full: 9999px;
+
+  /* ── Spacing ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+
+  /* ── Layout ── */
+  --sidebar-width:       186px;
+  --right-sidebar-width: 220px;
+  --topbar-height:       46px;
+
+  /* ── Scrollbar ── */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.10);
+}
+
+/* ─────────────────────────────────────────────
+   Light mode — Cloud Silver + Baby Blue
+   Applied when <html class="light">
+   ───────────────────────────────────────────── */
+:root.light {
+  /* Backgrounds — silver-gray layered */
+  --bg-base:        #D0D5E0;   /* page canvas   */
+  --bg-sidebar:     #C6CBD8;   /* left nav      */
+  --bg-surface:     #C6CBD8;   /* cards, topbar */
+  --bg-elevated:    #BABFD0;   /* inputs, hover */
+
+  /* Accent — baby blue / navy */
+  --accent:         #2A3855;
+  --accent-dim:     rgba(42, 56, 85, 0.10);
+  --accent-dim-md:  rgba(42, 56, 85, 0.18);
+
+  /* Text — deep navy */
+  --text-primary:   #1A2235;
+  --text-secondary: rgba(26, 34, 53, 0.60);
+  --text-muted:     rgba(26, 34, 53, 0.35);
+
+  /* Borders */
+  --border:         rgba(110, 120, 155, 0.22);
+  --border-subtle:  rgba(110, 120, 155, 0.15);
+
+  --scrollbar-thumb: rgba(42, 56, 85, 0.15);
+}

@@ -1,0 +1,30 @@
+/* ─────────────────────────────────────────────
+   Logo.module.css
+   ───────────────────────────────────────────── */
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  
+  gap: 8px;
+  user-select: none;
+}
+
+/* If using an <img> or <svg> tag for the saved logo */
+.logoImg {
+  height: 28px;
+  width: auto;
+}
+
+/* Fallback wordmark (until SVG is wired in) */
+.wordmark {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.wordmark .dot {
+  color: var(--accent);
+}

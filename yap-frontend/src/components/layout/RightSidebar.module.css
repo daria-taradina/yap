@@ -1,0 +1,80 @@
+/* ─────────────────────────────────────────────
+   RightSidebar.module.css
+   ───────────────────────────────────────────── */
+
+.sidebar {
+  width: var(--right-sidebar-width);
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border-left: 0.5px solid var(--border-subtle);
+  padding: 16px 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Section label ── */
+.sectionLabel {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 16px;
+  margin-bottom: 6px;
+}
+
+.sectionLabel:first-child {
+  margin-top: 0;
+}
+
+/* ── Trending tags ── */
+.trendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+
+.trendItem:hover {
+  color: var(--text-primary);
+}
+
+.trendCount {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ── Suggested users ── */
+.suggestedItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.suggestedInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestedName {
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: color 0.12s;
+}
+
+.suggestedItem:hover .suggestedName {
+  color: var(--text-primary);
+}
+
+.suggestedSub {
+  font-size: 10px;
+  color: var(--text-muted);
+}

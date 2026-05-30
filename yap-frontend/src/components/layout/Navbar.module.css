@@ -1,0 +1,240 @@
+/* ─────────────────────────────────────────────
+   Navbar.module.css  —  Left sidebar navigation
+   ───────────────────────────────────────────── */
+
+.navbar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--bg-sidebar);
+  border-right: 0.5px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Logo area ── */
+.logoArea {
+  padding: 16px 14px 14px;
+  border-bottom: 0.5px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Sun / moon toggle */
+.themeToggle {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.themeToggle:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* ── Nav section (scrollable middle) ── */
+.navSection {
+  padding: 12px 8px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Section labels ── */
+.sectionLabel {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 8px;
+  margin-bottom: 4px;
+  margin-top: 14px;
+}
+
+.sectionLabel:first-child {
+  margin-top: 0;
+}
+
+/* ── Nav items ── */
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-bottom: 1px;
+  transition: background 0.12s, color 0.12s;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.navItem.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.navIcon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ── Space items ── */
+.communityItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.communityItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.communityDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.communityName {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ── Load more toggle ── */
+.loadMoreBtn {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  text-align: left;
+  transition: color 0.12s;
+  margin-top: 2px;
+}
+
+.loadMoreBtn:hover {
+  color: var(--accent);
+}
+
+/* ── Create Space — separate button below list ── */
+.createSpaceBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-top: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border: 0.5px dashed var(--border);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  width: 100%;
+}
+
+.createSpaceBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim-md);
+  background: var(--accent-dim);
+}
+
+.createSpaceBtn i {
+  font-size: 13px;
+}
+
+/* ── Write area — bottom of navbar, expands inline ── */
+.writeArea {
+  padding: 0 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Expanded options — slide in above the button */
+.writeOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: expandIn 0.15s ease;
+}
+
+@keyframes expandIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.writeOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 0.5px solid var(--border);
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  width: 100%;
+  text-align: left;
+}
+
+.writeOption:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent-dim-md);
+}
+
+.writeOption i {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Main write button */
+.writeBtn {
+  padding: 8px 0;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--accent);
+  color: var(--bg-base);
+  width: 100%;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.writeBtn:hover {
+  opacity: 0.88;
+}
+
+/* When expanded — button becomes a cancel */
+.writeBtnActive {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border: 0.5px solid var(--border);
+}
+
+.writeBtnActive:hover {
+  opacity: 1;
+  color: var(--text-primary);
+}

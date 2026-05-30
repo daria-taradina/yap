@@ -1,0 +1,116 @@
+/* ─────────────────────────────────────────────
+   FeaturedCard.module.css  —  Blog post card
+   ───────────────────────────────────────────── */
+
+.card {
+  background: var(--bg-surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+}
+
+.card:hover {
+  border-color: var(--accent-dim-md);
+}
+
+.coverStrip {
+  height: 72px;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(196, 151, 63, 0.18);
+  font-size: 26px;
+}
+
+.body {
+  padding: 12px 14px;
+}
+
+/* ── Author block — Substack/magazine style ── */
+.authorBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 8px;
+}
+
+.displayName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.authorMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.username {
+  color: var(--text-secondary);
+}
+
+/* ── Post content ── */
+.title {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-bottom: 5px;
+}
+
+.excerpt {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+/* ── Footer: tags left, actions right ── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.actionItem {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.actionItem i {
+  font-size: 12px;
+}

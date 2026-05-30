@@ -1,0 +1,41 @@
+/* ─────────────────────────────────────────────
+   ProfilePage.module.css
+   ───────────────────────────────────────────── */
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.emptyIcon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.state {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.emptyIcon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  opacity: 0.35;
+}
