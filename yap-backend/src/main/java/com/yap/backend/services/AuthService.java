@@ -3,6 +3,7 @@ package com.yap.backend.services;
 import com.yap.backend.dtos.*;
 import com.yap.backend.entities.User;
 import com.yap.backend.enums.UserRole;
+import com.yap.backend.exceptions.InvalidInputException;
 import com.yap.backend.repositories.UserRepository;
 import com.yap.backend.security.JwtUtil;
 import org.springframework.security.authentication.*;
@@ -51,14 +52,14 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new InvalidInputException("Invalid email or password"));
+
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-            request.getUsername(), request.getPassword()
+                user.getUsername(), request.getPassword()
             )
         );
-
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow();
 
         String token = jwtUtil.generateToken(user.getUsername());
         return new AuthResponse(token, user.getUsername(), user.getRole().name());
