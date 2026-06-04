@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class BaseService {
 
-    private final UserRepository userRepository;
+    protected final UserRepository userRepository;
 
     public BaseService(UserRepository userRepository) {
         this.userRepository = userRepository;

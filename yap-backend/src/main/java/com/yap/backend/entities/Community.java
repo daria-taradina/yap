@@ -65,8 +65,8 @@ public class Community {
     // getters & setters
     public Integer getCommunityId() { return communityId; }
 
-    public String getcommunityName() { return communityName; }
-    public void setcommunityName(String communityName) { this.communityName = communityName; }
+    public String getCommunityName() { return communityName; }
+    public void setCommunityName(String communityName) { this.communityName = communityName; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
