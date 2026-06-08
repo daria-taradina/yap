@@ -19,12 +19,12 @@ public interface CommunityRepository extends JpaRepository<Community, Integer> {
     List<Community> findByCategory(CommunityCategory category);
  
     // My communities: communities created by this user
-    List<Community> findByCreatedBy_UserId(Integer userId);
+    List<Community> findByOwner_UserId(Integer userId);
     
     List<Community> findAllByOrderByCreatedAtDesc();
     
     List<Community> findByCategoryOrderByCreatedAtDesc(CommunityCategory category);
     
-    List<Community> findByCreatedBy_UserIdOrderByCreatedAtDesc(Integer userId);
+    List<Community> findByOwner_UserIdOrderByCreatedAtDesc(Integer userId);
     
 }

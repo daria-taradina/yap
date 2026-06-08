@@ -3,25 +3,25 @@ import styles from './ForumCard.module.css';
 
 export default function ForumCard({ post }) {
   const navigate = useNavigate();
-  const { id, title, space, username, likes, comments, tags } = post;
+  const { postId, title, communityName, authorUsername, likeCount, commentCount, tags } = post;
 
   return (
     <article
       className={styles.card}
-      onClick={() => navigate(`/post/${id}?type=discussion`)}
+      onClick={() => navigate(`/post/${postId}`)}
       role="button"
     >
       <div className={styles.body}>
         <div className={styles.topMeta}>
-          {space && (
+          {communityName && (
             <span
               className={styles.space}
-              onClick={(e) => { e.stopPropagation(); navigate(`/w/${space}`); }}
+              onClick={(e) => { e.stopPropagation(); navigate(`/w/${communityName}`); }}
             >
-              w/{space}
+              w/{communityName}
             </span>
           )}
-          {username && <span className={styles.username}>{username}</span>}
+          {authorUsername && <span className={styles.username}>@{authorUsername}</span>}
         </div>
         <h3 className={styles.title}>{title}</h3>
         <div className={styles.footer}>
@@ -32,10 +32,10 @@ export default function ForumCard({ post }) {
           </div>
           <div className={styles.actions}>
             <span className={styles.actionItem}>
-              <i className="ti ti-heart" aria-hidden="true" />{likes}
+              <i className="ti ti-heart" aria-hidden="true" />{likeCount}
             </span>
             <span className={styles.actionItem}>
-              <i className="ti ti-message-circle" aria-hidden="true" />{comments}
+              <i className="ti ti-message-circle" aria-hidden="true" />{commentCount}
             </span>
           </div>
         </div>

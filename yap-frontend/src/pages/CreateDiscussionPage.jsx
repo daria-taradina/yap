@@ -1,69 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { api } from '../api';
 import styles from './CreateDiscussionPage.module.css';
-
-/**
- * CreateDiscussionPage  —  /create-post/discussion
- *
- * Forum discussion creation. Space selector is the first and most
- * prominent field — you decide where it lives before you write.
- * No drafts — discussions go live immediately.
- *
- * Supports deep linking: /create-post/discussion?space=WomenInTech
- *
- * TODO: POST /api/posts
- *   { post_type: 'DISCUSSION', title, content, space_id, tags, is_published: true }
- */
-
-// TODO: replace with GET /api/spaces/joined
-const MY_SPACES = [
-  { id: '1', name: 'WomenInTech' },
-  { id: '2', name: 'Friendship'  },
-  { id: '3', name: 'SelfCare'    },
-];
 
 export default function CreateDiscussionPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
-  // Pre-select space if passed via query param
   const preselectedSpace = searchParams.get('space') || '';
-  const preselectedId = MY_SPACES.find((s) => s.name === preselectedSpace)?.id || '';
 
-  const [spaceId, setSpaceId] = useState(preselectedId);
+  const [mySpaces, setMySpaces] = useState([]);
+  const [spaceId, setSpaceId] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    api.getMySpaces()
+      .then((res) => res.json())
+      .then((data) => {
+        const spaces = Array.isArray(data) ? data : [];
+        setMySpaces(spaces);
+        if (preselectedSpace) {
+          const found = spaces.find((s) => s.name === preselectedSpace.toLowerCase());
+          if (found) setSpaceId(String(found.communityId));
+        }
+      })
+      .catch(() => setMySpaces([]));
+  }, []);
+
   async function handleSubmit() {
-    if (!spaceId) { setError('Please choose a space for your discussion.'); return; }
+    if (!spaceId) { setError('Please choose a space.'); return; }
     if (!title.trim()) { setError('Your discussion needs a title.'); return; }
 
-    const tagList = tags
-      .split(',')
-      .map((t) => t.trim().toLowerCase())
-      .filter(Boolean);
+    const tagList = tags.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
 
     setSubmitting(true);
     setError('');
     try {
-      // TODO: POST /api/posts
-      // await fetch('/api/posts', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json', ...authHeaders },
-      //   body: JSON.stringify({
-      //     post_type: 'DISCUSSION',
-      //     title,
-      //     content,
-      //     space_id: spaceId,
-      //     tags: tagList,
-      //     is_published: true,
-      //   }),
-      // });
-      const space = MY_SPACES.find((s) => s.id === spaceId);
-      navigate(space ? `/w/${space.name}` : '/');
+      const res = await api.createPost({
+        communityId: parseInt(spaceId),
+        title,
+        contentText: content,
+        postType: 'DISCUSSION',
+        tags: tagList,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Failed to post.');
+        return;
+      }
+
+      const data = await res.json();
+      navigate(`/post/${data.postId}`);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -74,7 +65,6 @@ export default function CreateDiscussionPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        {/* Space — first and most prominent */}
         <div className={styles.spaceField}>
           <label className={styles.spaceLabel}>Post in</label>
           <select
@@ -83,13 +73,12 @@ export default function CreateDiscussionPage() {
             onChange={(e) => { setSpaceId(e.target.value); setError(''); }}
           >
             <option value="">Choose a space...</option>
-            {MY_SPACES.map((s) => (
-              <option key={s.id} value={s.id}>w/{s.name}</option>
+            {mySpaces.map((s) => (
+              <option key={s.communityId} value={String(s.communityId)}>w/{s.name}</option>
             ))}
           </select>
         </div>
 
-        {/* Title */}
         <div className={styles.field}>
           <label className={styles.label}>Title</label>
           <input
@@ -100,9 +89,8 @@ export default function CreateDiscussionPage() {
           />
         </div>
 
-        {/* Body — optional, markdown-lite */}
         <div className={styles.field}>
-          <label className={styles.label}>Body <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          <label className={styles.label}>Body <span style={{ fontWeight: 400 }}>(optional)</span></label>
           <textarea
             className={styles.textarea}
             placeholder="Add more context, a question, or share your thoughts..."
@@ -111,7 +99,6 @@ export default function CreateDiscussionPage() {
           />
         </div>
 
-        {/* Tags */}
         <div className={styles.field}>
           <label className={styles.label}>Tags</label>
           <input
@@ -126,14 +113,8 @@ export default function CreateDiscussionPage() {
         {error && <p className={styles.error}>{error}</p>}
 
         <div className={styles.footer}>
-          <button className={styles.cancelBtn} onClick={() => navigate(-1)}>
-            Cancel
-          </button>
-          <button
-            className={styles.submitBtn}
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
+          <button className={styles.cancelBtn} onClick={() => navigate(-1)}>Cancel</button>
+          <button className={styles.submitBtn} onClick={handleSubmit} disabled={submitting}>
             {submitting ? 'Posting...' : 'Post'}
           </button>
         </div>

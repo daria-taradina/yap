@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '../common/Logo';
 import { useTheme } from '../../hooks/useTheme';
+import { api } from '../../api';
 import styles from './Navbar.module.css';
 
 const DISCOVER_LINKS = [
@@ -11,16 +12,7 @@ const DISCOVER_LINKS = [
   { to: '/blogs',   label: 'Blogs',   icon: 'ti ti-notebook'  },
 ];
 
-// TODO: pull from user context / API
-const MY_SPACES = [
-  { name: 'WomenInTech', color: '#C4973F' },
-  { name: 'Friendship',  color: '#6B8BAD' },
-  { name: 'SelfCare',    color: '#7A9E7E' },
-  { name: 'BookClub',    color: '#A07AB5' },
-  { name: 'CareerTalk',  color: '#7A9E7E' },
-  { name: 'MindfulLiving', color: '#6B8BAD' },
-];
-
+const SPACE_COLORS = ['#C4973F', '#6B8BAD', '#7A9E7E', '#A07AB5', '#9E7A7A'];
 const SPACES_VISIBLE_DEFAULT = 3;
 
 export default function Navbar() {
@@ -28,9 +20,17 @@ export default function Navbar() {
   const [showAll, setShowAll] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const [mySpaces, setMySpaces] = useState([]);
 
-  const visibleSpaces = showAll ? MY_SPACES : MY_SPACES.slice(0, SPACES_VISIBLE_DEFAULT);
-  const hiddenCount = MY_SPACES.length - SPACES_VISIBLE_DEFAULT;
+  useEffect(() => {
+    api.getMySpaces()
+      .then((res) => res.json())
+      .then((data) => setMySpaces(Array.isArray(data) ? data : []))
+      .catch(() => setMySpaces([]));
+  }, []);
+
+  const visibleSpaces = showAll ? mySpaces : mySpaces.slice(0, SPACES_VISIBLE_DEFAULT);
+  const hiddenCount = mySpaces.length - SPACES_VISIBLE_DEFAULT;
 
   function pick(type) {
     setExpanded(false);
@@ -45,7 +45,6 @@ export default function Navbar() {
           className={styles.themeToggle}
           onClick={toggleTheme}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
         >
           <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} aria-hidden="true" />
         </button>
@@ -53,15 +52,12 @@ export default function Navbar() {
 
       <div className={styles.navSection}>
         <div className={styles.sectionLabel}>Discover</div>
-
         {DISCOVER_LINKS.map(({ to, label, icon }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
-            className={({ isActive }) =>
-              `${styles.navItem} ${isActive ? styles.active : ''}`
-            }
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
           >
             <i className={`${icon} ${styles.navIcon}`} aria-hidden="true" />
             {label}
@@ -69,57 +65,42 @@ export default function Navbar() {
         ))}
 
         <div className={styles.sectionLabel}>My Spaces</div>
-
-        {visibleSpaces.map(({ name, color }) => (
+        {visibleSpaces.map((space, i) => (
           <div
-            key={name}
+            key={space.communityId}
             className={styles.communityItem}
-            onClick={() => navigate(`/w/${name}`)}
+            onClick={() => navigate(`/w/${space.name}`)}
           >
-            <span className={styles.communityDot} style={{ background: color }} />
-            <span className={styles.communityName}>{name}</span>
+            <span className={styles.communityDot} style={{ background: SPACE_COLORS[i % SPACE_COLORS.length] }} />
+            <span className={styles.communityName}>w/{space.name}</span>
           </div>
         ))}
 
-        {MY_SPACES.length > SPACES_VISIBLE_DEFAULT && (
-          <button
-            className={styles.loadMoreBtn}
-            onClick={() => setShowAll((v) => !v)}
-          >
+        {mySpaces.length > SPACES_VISIBLE_DEFAULT && (
+          <button className={styles.loadMoreBtn} onClick={() => setShowAll((v) => !v)}>
             {showAll ? 'Show less' : `+${hiddenCount} more`}
           </button>
         )}
 
-        <button
-          className={styles.createSpaceBtn}
-          onClick={() => navigate('/create-space')}
-        >
+        <button className={styles.createSpaceBtn} onClick={() => navigate('/create-space')}>
           <i className="ti ti-plus" aria-hidden="true" />
           Create Space
         </button>
       </div>
 
-      {/* Write area — expands inline */}
       <div className={styles.writeArea}>
         {expanded && (
           <div className={styles.writeOptions}>
-            <button
-              className={styles.writeOption}
-              onClick={() => pick('blog')}
-            >
+            <button className={styles.writeOption} onClick={() => pick('blog')}>
               <i className="ti ti-notebook" aria-hidden="true" />
               Blog Post
             </button>
-            <button
-              className={styles.writeOption}
-              onClick={() => pick('discussion')}
-            >
+            <button className={styles.writeOption} onClick={() => pick('discussion')}>
               <i className="ti ti-messages" aria-hidden="true" />
               Discussion
             </button>
           </div>
         )}
-
         <button
           className={`${styles.writeBtn} ${expanded ? styles.writeBtnActive : ''}`}
           onClick={() => setExpanded((v) => !v)}

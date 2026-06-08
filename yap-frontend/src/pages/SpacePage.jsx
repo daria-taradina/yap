@@ -1,31 +1,62 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import SpaceSidebar from '../components/space/SpaceSidebar';
 import ForumCard from '../components/feed/ForumCard';
+import { api } from '../api';
 import styles from './SpacePage.module.css';
 
-/**
- * SpacePage  —  /w/:spaceName
- *
- * Forum-only. Blog posts belong to personal /blog/:username pages.
- * Fetches space info + posts from API when backend is ready.
- */
 export default function SpacePage() {
   const { spaceName } = useParams();
+  const navigate = useNavigate();
 
   const [space, setSpace] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [joining, setJoining] = useState(false);
 
   useEffect(() => {
-    // TODO: replace with real API calls
-    // GET /api/spaces/{spaceName}
-    // GET /api/spaces/{spaceName}/posts
-    setLoading(false);
-    setSpace(null);
-    setPosts([]);
+    setLoading(true);
+    api.getSpace(spaceName)
+      .then((res) => {
+        if (!res.ok) throw new Error('Space not found');
+        return res.json();
+      })
+      .then(async (spaceData) => {
+        setSpace(spaceData);
+        const postsRes = await api.getSpacePosts(spaceData.communityId);
+        const postsData = await postsRes.json();
+        setPosts(Array.isArray(postsData) ? postsData : []);
+      })
+      .catch(() => setError('Space not found'))
+      .finally(() => setLoading(false));
   }, [spaceName]);
+
+  async function handleJoin() {
+    if (!space) return;
+    setJoining(true);
+    try {
+      const res = await api.joinSpace(space.communityId);
+      if (res.ok) {
+        setSpace((prev) => ({ ...prev, member: true, memberCount: prev.memberCount + 1 }));
+      }
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  async function handleLeave() {
+    if (!space) return;
+    setJoining(true);
+    try {
+      const res = await api.leaveSpace(space.communityId);
+      if (res.ok) {
+        setSpace((prev) => ({ ...prev, member: false, memberCount: Math.max(0, prev.memberCount - 1) }));
+      }
+    } finally {
+      setJoining(false);
+    }
+  }
 
   if (loading) return <div className={styles.state}>Loading...</div>;
   if (error)   return <div className={styles.state}>{error}</div>;
@@ -44,9 +75,29 @@ export default function SpacePage() {
     <div className={styles.layout}>
       <div className={styles.feed}>
         <div className={styles.spaceHeader}>
-          <h1 className={styles.spaceTitle}>{space.name}</h1>
-          <div className={styles.spaceHandle}>w/{space.name}</div>
+          <div>
+            <h1 className={styles.spaceTitle}>w/{space.name}</h1>
+            <p className={styles.spaceDesc}>{space.description}</p>
+          </div>
+          {space.member ? (
+            <button className={styles.leaveBtn} onClick={handleLeave} disabled={joining}>
+              {joining ? '...' : 'Leave'}
+            </button>
+          ) : (
+            <button className={styles.joinBtn} onClick={handleJoin} disabled={joining}>
+              {joining ? '...' : 'Join'}
+            </button>
+          )}
         </div>
+
+        {space.member && (
+          <button
+            className={styles.newPostBtn}
+            onClick={() => navigate(`/create-post/discussion?space=${space.name}`)}
+          >
+            <i className="ti ti-plus" /> New Discussion
+          </button>
+        )}
 
         {posts.length === 0 ? (
           <div className={styles.emptyState}>
@@ -54,7 +105,7 @@ export default function SpacePage() {
             <p>No posts yet. Be the first to start a conversation.</p>
           </div>
         ) : (
-          posts.map((post) => <ForumCard key={post.id} post={post} />)
+          posts.map((post) => <ForumCard key={post.postId} post={post} />)
         )}
       </div>
 

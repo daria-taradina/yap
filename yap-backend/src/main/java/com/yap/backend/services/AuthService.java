@@ -44,11 +44,12 @@ public class AuthService {
         user.setEmail(request.getEmail().toLowerCase());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(UserRole.USER);
+        user.getUserId();
 
         userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token, user.getUsername(), user.getRole().name());
+        return new AuthResponse(token, user.getUsername(), user.getRole().name(),user.getUserId());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -62,6 +63,6 @@ public class AuthService {
         );
 
         String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token, user.getUsername(), user.getRole().name());
+        return new AuthResponse(token, user.getUsername(), user.getRole().name(), user.getUserId());
     }
 }

@@ -1,33 +1,29 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../api';
 import styles from './CreateSpacePage.module.css';
 
-/**
- * CreateSpacePage  —  /create-space
- *
- * TODO: POST /api/spaces
- * Body: { name, description, category, guidelines: string[] }
- */
-
 const CATEGORIES = [
-  'Career & Work',
-  'Relationships',
-  'Self-care & Wellness',
-  'Creativity',
-  'Identity & Culture',
-  'Parenting & Family',
-  'Finance',
-  'Other',
+  { label: 'Career & Money',              value: 'CAREER_AND_MONEY' },
+  { label: 'Health & Wellness',           value: 'HEALTH_AND_WELLNESS' },
+  { label: 'Relationships & Family',      value: 'RELATIONSHIPS_AND_FAMILY' },
+  { label: 'Identity & Life Experiences', value: 'IDENTITY_AND_EXPERIENCES' },
+  { label: 'Knowledge & Learning',        value: 'KNOWLEDGE_AND_LEARNING' },
+  { label: 'Creativity & Expression',     value: 'CREATIVITY_AND_EXPRESSION' },
+  { label: 'Hobbies & Interests',         value: 'HOBBIES_AND_INTERESTS' },
+  { label: 'Lifestyle & Travel',          value: 'LIFESTYLE_AND_TRAVEL' },
+  { label: 'Entertainment & Culture',     value: 'ENTERTAINMENT_AND_CULTURE' },
+  { label: 'Technology & Gaming',         value: 'TECHNOLOGY_AND_GAMING' },
+  { label: 'Q&As & Stories',             value: 'QA_AND_STORIES' },
+  { label: 'Society & Current Issues',    value: 'SOCIETY_AND_CURRENT_ISSUES' },
+  { label: 'Support & Sensitive Topics',  value: 'SUPPORT_AND_SENSITIVE_TOPICS' },
+  { label: 'Other',                       value: 'OTHER' },
 ];
 
 export default function CreateSpacePage() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: '',
-    description: '',
-    category: '',
-  });
+  const [form, setForm] = useState({ name: '', description: '', category: '' });
   const [guidelines, setGuidelines] = useState(['']);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -59,18 +55,21 @@ export default function CreateSpacePage() {
 
     setSubmitting(true);
     try {
-      // TODO: POST /api/spaces
-      // await fetch('/api/spaces', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json', ...auth },
-      //   body: JSON.stringify({
-      //     name: form.name,
-      //     description: form.description,
-      //     category: form.category,
-      //     guidelines: cleanGuidelines,
-      //   }),
-      // });
-      navigate(`/w/${form.name}`);
+      const res = await api.createSpace({
+        name: form.name.toLowerCase(),
+        description: form.description,
+        category: form.category,
+        guidelines: cleanGuidelines,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Failed to create space.');
+        return;
+      }
+
+      const data = await res.json();
+      navigate(`/w/${data.name}`);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -87,7 +86,6 @@ export default function CreateSpacePage() {
           knows what to expect.
         </p>
 
-        {/* Name */}
         <div className={styles.field}>
           <label className={styles.label}>Space Name</label>
           <div className={styles.inputWrap}>
@@ -95,15 +93,14 @@ export default function CreateSpacePage() {
             <input
               name="name"
               className={`${styles.input} ${styles.inputWithPrefix}`}
-              placeholder="WomenInTech"
+              placeholder="womenintech"
               value={form.name}
               onChange={handleChange}
             />
           </div>
-          <span className={styles.hint}>No spaces or special characters</span>
+          <span className={styles.hint}>Lowercase letters, numbers, and underscores only</span>
         </div>
 
-        {/* Category */}
         <div className={styles.field}>
           <label className={styles.label}>Category</label>
           <select
@@ -114,12 +111,11 @@ export default function CreateSpacePage() {
           >
             <option value="">Select a category...</option>
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
         </div>
 
-        {/* Description */}
         <div className={styles.field}>
           <label className={styles.label}>Description</label>
           <textarea
@@ -131,7 +127,6 @@ export default function CreateSpacePage() {
           />
         </div>
 
-        {/* Guidelines */}
         <div className={styles.field}>
           <label className={styles.label}>Guidelines (optional)</label>
           {guidelines.map((g, i) => (
@@ -164,14 +159,8 @@ export default function CreateSpacePage() {
         {error && <p className={styles.error}>{error}</p>}
 
         <div className={styles.footer}>
-          <button className={styles.cancelBtn} onClick={() => navigate(-1)}>
-            Cancel
-          </button>
-          <button
-            className={styles.submitBtn}
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
+          <button className={styles.cancelBtn} onClick={() => navigate(-1)}>Cancel</button>
+          <button className={styles.submitBtn} onClick={handleSubmit} disabled={submitting}>
             {submitting ? 'Creating...' : 'Create Space'}
           </button>
         </div>

@@ -1,20 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../api';
 import styles from './ExplorePage.module.css';
-
-/**
- * ExplorePage  —  /explore
- *
- * Discover spaces by search.
- * TODO: GET /api/spaces?search=
- */
 
 const SPACE_COLORS = ['#C4973F', '#6B8BAD', '#7A9E7E', '#A07AB5', '#9E7A7A'];
 
 export default function ExplorePage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [spaces] = useState([]); // TODO: fetch from GET /api/spaces
+  const [spaces, setSpaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.getSpaces()
+      .then((res) => res.json())
+      .then((data) => setSpaces(Array.isArray(data) ? data : []))
+      .catch(() => setSpaces([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = spaces.filter((s) =>
     !search ||
@@ -22,9 +25,10 @@ export default function ExplorePage() {
     s.description?.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (loading) return <div className={styles.page}><div className={styles.emptyState}><div className={styles.emptyIcon}>✦</div><p>Loading spaces...</p></div></div>;
+
   return (
     <div className={styles.page}>
-      {/* Search */}
       <div className={styles.searchWrap}>
         <i className={`ti ti-search ${styles.searchIcon}`} aria-hidden="true" />
         <input
@@ -35,9 +39,6 @@ export default function ExplorePage() {
         />
       </div>
 
-      {/* Category chips removed — search is enough for now */}
-
-      {/* Space grid */}
       <div className={styles.sectionLabel}>All Spaces</div>
 
       {filtered.length === 0 ? (
@@ -53,7 +54,7 @@ export default function ExplorePage() {
         <div className={styles.grid}>
           {filtered.map((space, i) => (
             <div
-              key={space.id}
+              key={space.communityId}
               className={styles.spaceCard}
               onClick={() => navigate(`/w/${space.name}`)}
             >
@@ -62,17 +63,16 @@ export default function ExplorePage() {
                   className={styles.spaceDot}
                   style={{ background: SPACE_COLORS[i % SPACE_COLORS.length] }}
                 />
-                {space.isJoined && (
+                {space.member && (
                   <span className={styles.joinedBadge}>Joined</span>
                 )}
               </div>
-              <div className={styles.spaceName}>{space.name}</div>
-              <div className={styles.spaceHandle}>w/{space.name}</div>
+              <div className={styles.spaceName}>w/{space.name}</div>
               {space.description && (
                 <p className={styles.spaceDesc}>{space.description}</p>
               )}
               <div className={styles.spaceMeta}>
-                {space.joinedCount?.toLocaleString()} joined
+                {space.memberCount?.toLocaleString()} members
               </div>
             </div>
           ))}

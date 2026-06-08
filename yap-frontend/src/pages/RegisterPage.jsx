@@ -61,6 +61,7 @@ export default function RegisterPage() {
 
       const data = await res.json();
       localStorage.setItem('yap_token', data.token);
+      localStorage.setItem('yap_user', JSON.stringify({ userId: data.userId, username: data.username, role: data.role }));
       navigate('/');
     } catch {
       setError('Something went wrong. Please try again.');
