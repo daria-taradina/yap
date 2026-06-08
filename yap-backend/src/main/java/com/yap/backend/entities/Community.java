@@ -19,7 +19,7 @@ public class Community {
     private Integer communityId;
 
     @Column(unique = true, length = 30, nullable = false)
-    private String communityName;
+    private String name;
 
     @Column(length = 300, nullable = false)
     private String description;
@@ -65,8 +65,8 @@ public class Community {
     // getters & setters
     public Integer getCommunityId() { return communityId; }
 
-    public String getCommunityName() { return communityName; }
-    public void setCommunityName(String communityName) { this.communityName = communityName; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

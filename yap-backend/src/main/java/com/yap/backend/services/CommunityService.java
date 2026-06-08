@@ -35,12 +35,12 @@ public class CommunityService extends BaseService {
         User currentUser = getAuthenticatedUser();
         String name = dto.getName().toLowerCase();
 
-        if (communityRepository.existsByCommunityNameIgnoreCase(name)) {
+        if (communityRepository.existsByNameIgnoreCase(name)) {
             throw new ResourceAlreadyExistsException("Space name already taken: " + name);
         }
 
         Community community = new Community();
-        community.setCommunityName(name);
+        community.setName(name);
         community.setDescription(dto.getDescription());
         community.setOwner(currentUser);
         community.setCategory(dto.getCategory());
@@ -102,7 +102,7 @@ public class CommunityService extends BaseService {
     @Transactional(readOnly = true)
     public CommunityResponse getCommunityByName(String name) {
         User currentUser = getAuthenticatedUser();
-        Community community = communityRepository.findByCommunityName(name)
+        Community community = communityRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Space not found: " + name));
         return mapToResponseDTO(community, currentUser.getUserId());
     }
@@ -125,7 +125,7 @@ public class CommunityService extends BaseService {
         boolean isMember = communityMemberRepository.existsById(
             new com.yap.backend.keys.CommunityMemberId(c.getCommunityId(), currentUserId));
         return new CommunityResponse(
-            c.getCommunityId(), c.getCommunityName(), c.getDescription(),
+            c.getCommunityId(), c.getName(), c.getDescription(),
             c.getMemberCount(), c.getCreatedAt(),
             c.getOwner().getUserId(), c.getOwner().getUsername(),
             c.getCategory(), c.getIconUrl(), c.getBannerUrl(),

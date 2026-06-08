@@ -60,4 +60,13 @@ export const api = {
   // Comments
   getComments: (postId) => apiFetch(`/posts/${postId}/comments`),
   createComment: (body) => apiFetch('/posts/comments', { method: 'POST', body: JSON.stringify(body) }),
+
+  // add these to the api object:
+  getPost: (id) => apiFetch(`/posts/${id}`),
+  likeComment: (id) => apiFetch(`/posts/comments/${id}/like`, { method: 'POST' }),
+  unlikeComment: (id) => apiFetch(`/posts/comments/${id}/like`, { method: 'DELETE' }),
+  getTrendingTags: () => apiFetch('/posts/trending'),
+  getUserProfile: (username) => apiFetch(`/users/${username}`),
+  getUserPosts: (userId) => apiFetch(`/posts/user/${userId}/community`),
+  getUserLiked: (userId) => apiFetch(`/posts/liked-by/${userId}`),
 };

@@ -1,22 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { api } from '../api';
 import styles from './PostDetailPage.module.css';
 
-/**
- * PostDetailPage  —  /post/:postId?type=blog|forum
- *
- * Handles both blog posts and forum posts.
- * Type is passed as a query param so we know which endpoint to hit.
- *
- * TODO: GET /api/posts/blog/{postId}   or   GET /api/posts/forum/{postId}
- * TODO: GET /api/posts/{postId}/comments
- * TODO: POST /api/posts/{postId}/comments
- * TODO: POST /api/posts/{postId}/like
- */
 export default function PostDetailPage() {
   const { postId } = useParams();
-  const [searchParams] = useSearchParams();
-  const postType = searchParams.get('type') || 'forum'; // 'blog' | 'forum'
+  const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -27,40 +16,37 @@ export default function PostDetailPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // TODO: fetch post + comments from API
-    // const endpoint = postType === 'blog'
-    //   ? `/api/posts/blog/${postId}`
-    //   : `/api/posts/forum/${postId}`;
-    // const [postRes, commentsRes] = await Promise.all([
-    //   fetch(endpoint, { headers: auth }),
-    //   fetch(`/api/posts/${postId}/comments`, { headers: auth }),
-    // ]);
-    // const postData = await postRes.json();
-    // setPost(postData);
-    // setLikeCount(postData.likeCount);
-    // setComments(await commentsRes.json());
-    setLoading(false);
-    setPost(null);
-  }, [postId, postType]);
+    Promise.all([
+      api.getPost(postId).then(r => r.json()),
+      api.getComments(postId).then(r => r.json()),
+    ]).then(([postData, commentsData]) => {
+      setPost(postData);
+      setLiked(postData.likedByCurrentUser);
+      setLikeCount(postData.likeCount);
+      setComments(Array.isArray(commentsData) ? commentsData : []);
+    }).catch(() => setPost(null))
+      .finally(() => setLoading(false));
+  }, [postId]);
 
   async function handleLike() {
-    // TODO: POST /api/posts/{postId}/like
-    setLiked((v) => !v);
-    setLikeCount((n) => liked ? n - 1 : n + 1);
+    try {
+      if (liked) {
+        await api.unlikePost(postId);
+        setLiked(false); setLikeCount(n => Math.max(0, n - 1));
+      } else {
+        await api.likePost(postId);
+        setLiked(true); setLikeCount(n => n + 1);
+      }
+    } catch {}
   }
 
   async function handleComment() {
     if (!commentText.trim()) return;
     setSubmitting(true);
     try {
-      // TODO: POST /api/posts/{postId}/comments
-      // const res = await fetch(`/api/posts/${postId}/comments`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json', ...auth },
-      //   body: JSON.stringify({ content: commentText }),
-      // });
-      // const newComment = await res.json();
-      // setComments((prev) => [newComment, ...prev]);
+      const res = await api.createComment({ postId: parseInt(postId), contentText: commentText });
+      const newComment = await res.json();
+      setComments(prev => [newComment, ...prev]);
       setCommentText('');
     } finally {
       setSubmitting(false);
@@ -72,52 +58,47 @@ export default function PostDetailPage() {
 
   return (
     <div className={styles.page}>
-      {/* Post */}
       <div className={styles.post}>
-        {postType === 'blog' ? (
-          <BlogHeader post={post} />
-        ) : (
-          <ForumHeader post={post} />
-        )}
+        <div className={styles.forumMeta}>
+          {post.communityName && (
+            <span className={styles.space} onClick={() => navigate(`/w/${post.communityName}`)}>
+              w/{post.communityName}
+            </span>
+          )}
+          <span className={styles.forumUsername}>@{post.authorUsername}</span>
+          {post.createdAt && (
+            <span className={styles.timestamp}>· {new Date(post.createdAt).toLocaleDateString()}</span>
+          )}
+        </div>
 
         <h1 className={styles.title}>{post.title}</h1>
         <p className={styles.body}>{post.contentText}</p>
 
         {post.tags?.length > 0 && (
           <div className={styles.tags}>
-            {post.tags.map((tag) => (
-              <span key={tag} className={styles.tag}>#{tag}</span>
-            ))}
+            {post.tags.map(tag => <span key={tag} className={styles.tag}>#{tag}</span>)}
           </div>
         )}
 
-        {/* Actions */}
         <div className={styles.actions}>
-          <button
-            className={`${styles.actionBtn} ${liked ? styles.liked : ''}`}
-            onClick={handleLike}
-          >
-            <i className={liked ? 'ti ti-heart-filled' : 'ti ti-heart'} />
-            {likeCount}
+          <button className={`${styles.actionBtn} ${liked ? styles.liked : ''}`} onClick={handleLike}>
+            <i className={liked ? 'ti ti-heart-filled' : 'ti ti-heart'} /> {likeCount}
           </button>
           <button className={styles.actionBtn}>
-            <i className="ti ti-message-circle" />
-            {comments.length}
+            <i className="ti ti-message-circle" /> {comments.length}
           </button>
         </div>
       </div>
 
-      {/* Comments */}
       <div className={styles.commentsSection}>
         <div className={styles.commentsLabel}>Replies</div>
 
-        {/* Composer */}
         <div className={styles.composer}>
           <textarea
             className={styles.composerInput}
             placeholder="Share your thoughts..."
             value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
+            onChange={e => setCommentText(e.target.value)}
           />
           <div className={styles.composerFooter}>
             <button
@@ -130,68 +111,96 @@ export default function PostDetailPage() {
           </div>
         </div>
 
-        {/* Comment list */}
-        {comments.length === 0 ? (
-          <div className={styles.emptyComments}>
-            No replies yet — start the conversation.
-          </div>
-        ) : (
-          comments.map((c) => (
-            <Comment key={c.id} comment={c} />
-          ))
-        )}
+        {comments.length === 0
+          ? <div className={styles.emptyComments}>No replies yet — start the conversation.</div>
+          : comments.map(c => <CommentItem key={c.commentId} comment={c} postId={postId} />)
+        }
       </div>
     </div>
   );
 }
 
-/* ── Sub-components ── */
-
-function BlogHeader({ post }) {
-  return (
-    <div className={styles.blogAuthor}>
-      <span className={styles.displayName}>{post.displayName || post.username}</span>
-      <span className={styles.byline}>
-        <span className={styles.username}>{post.username}</span>
-        {post.readTime && <span>· {post.readTime} read</span>}
-      </span>
-    </div>
-  );
-}
-
-function ForumHeader({ post }) {
-  return (
-    <div className={styles.forumMeta}>
-      {post.space && <span className={styles.space}>w/{post.space}</span>}
-      {post.username && <span className={styles.forumUsername}>{post.username}</span>}
-      {post.createdAt && <span className={styles.timestamp}>· {post.createdAt}</span>}
-    </div>
-  );
-}
-
-function Comment({ comment }) {
-  const [liked, setLiked] = useState(false);
+function CommentItem({ comment, postId }) {
+  const [liked, setLiked] = useState(comment.likedByCurrentUser);
   const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
+  const [replyText, setReplyText] = useState('');
+  const [showReply, setShowReply] = useState(false);
+  const [replies, setReplies] = useState(comment.replies || []);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleLike() {
+    try {
+      if (liked) {
+        await api.unlikeComment(comment.commentId);
+        setLiked(false); setLikeCount(n => Math.max(0, n - 1));
+      } else {
+        await api.likeComment(comment.commentId);
+        setLiked(true); setLikeCount(n => n + 1);
+      }
+    } catch {}
+  }
+
+  async function handleReply() {
+    if (!replyText.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await api.createComment({
+        postId: parseInt(postId),
+        parentCommentId: comment.commentId,
+        contentText: replyText
+      });
+      const newReply = await res.json();
+      setReplies(prev => [...prev, newReply]);
+      setReplyText('');
+      setShowReply(false);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className={styles.comment}>
       <div className={styles.commentMeta}>
-        <span className={styles.commentAuthor}>{comment.username}</span>
+        <span className={styles.commentAuthor}>@{comment.authorUsername}</span>
         {comment.createdAt && (
-          <span className={styles.commentTime}>· {comment.createdAt}</span>
+          <span className={styles.commentTime}>· {new Date(comment.createdAt).toLocaleDateString()}</span>
         )}
       </div>
       <p className={styles.commentBody}>{comment.contentText}</p>
-      <div
-        className={styles.commentLike}
-        onClick={() => {
-          setLiked((v) => !v);
-          setLikeCount((n) => liked ? n - 1 : n + 1);
-        }}
-      >
-        <i className={liked ? 'ti ti-heart-filled' : 'ti ti-heart'} />
-        {likeCount > 0 && likeCount}
+      <div className={styles.commentActions}>
+        <span className={styles.commentLike} onClick={handleLike}>
+          <i className={liked ? 'ti ti-heart-filled' : 'ti ti-heart'} />
+          {likeCount > 0 && likeCount}
+        </span>
+        <button className={styles.replyBtn} onClick={() => setShowReply(v => !v)}>
+          Reply
+        </button>
       </div>
+
+      {showReply && (
+        <div className={styles.replyComposer}>
+          <textarea
+            className={styles.composerInput}
+            placeholder="Write a reply..."
+            value={replyText}
+            onChange={e => setReplyText(e.target.value)}
+          />
+          <button className={styles.submitBtn} onClick={handleReply} disabled={submitting}>
+            {submitting ? '...' : 'Reply'}
+          </button>
+        </div>
+      )}
+
+      {replies.length > 0 && (
+        <div className={styles.replies}>
+          {replies.map(r => (
+            <div key={r.commentId} className={styles.reply}>
+              <span className={styles.commentAuthor}>@{r.authorUsername}</span>
+              <p className={styles.commentBody}>{r.contentText}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
