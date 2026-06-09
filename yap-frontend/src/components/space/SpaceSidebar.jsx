@@ -5,10 +5,36 @@ function formatCount(n) {
   return String(n ?? 0);
 }
 
-export default function SpaceSidebar({ space, onJoin, onLeave }) {
+export default function SpaceSidebar({ space, isOwner, joining, onJoin, onLeave }) {
   const guidelines = space.guidelines
     ? space.guidelines.split(',').map(g => g.trim()).filter(Boolean)
     : [];
+
+  function renderAction() {
+    if (isOwner) {
+      return (
+        <div className={styles.ownerBadge}>
+          <i className="ti ti-crown" /> You manage this space
+        </div>
+      );
+    }
+    if (space.member) {
+      return (
+        <button
+          className={`${styles.joinBtn} ${styles.joined}`}
+          onClick={onLeave}
+          disabled={joining}
+        >
+          {joining ? '...' : 'Leave'}
+        </button>
+      );
+    }
+    return (
+      <button className={styles.joinBtn} onClick={onJoin} disabled={joining}>
+        {joining ? '...' : 'Join'}
+      </button>
+    );
+  }
 
   return (
     <div className={styles.panel}>
@@ -23,10 +49,7 @@ export default function SpaceSidebar({ space, onJoin, onLeave }) {
               Created {new Date(space.createdAt).toLocaleDateString()}
             </div>
           )}
-          {space.member
-            ? <button className={`${styles.joinBtn} ${styles.joined}`} onClick={onLeave}>Leave</button>
-            : <button className={styles.joinBtn} onClick={onJoin}>Join</button>
-          }
+          {renderAction()}
         </div>
         <div className={styles.stats}>
           <div className={styles.stat}>

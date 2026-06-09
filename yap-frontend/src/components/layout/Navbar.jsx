@@ -21,6 +21,7 @@ export default function Navbar() {
   const [expanded, setExpanded] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const [mySpaces, setMySpaces] = useState([]);
+  const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
 
   useEffect(() => {
     api.getMySpaces()
@@ -31,6 +32,12 @@ export default function Navbar() {
 
   const visibleSpaces = showAll ? mySpaces : mySpaces.slice(0, SPACES_VISIBLE_DEFAULT);
   const hiddenCount = mySpaces.length - SPACES_VISIBLE_DEFAULT;
+
+  function handleLogout() {
+    localStorage.removeItem('yap_token');
+    localStorage.removeItem('yap_user');
+    navigate('/login');
+  }
 
   function pick(type) {
     setExpanded(false);
@@ -108,6 +115,8 @@ export default function Navbar() {
           {expanded ? '✕ Cancel' : '+ Write'}
         </button>
       </div>
+
+      
     </nav>
   );
 }

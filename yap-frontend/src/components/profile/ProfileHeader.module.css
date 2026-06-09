@@ -181,3 +181,86 @@
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+.avatarEditable { cursor: pointer; position: relative; }
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+}
+
+.uploading {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 99px);
+  border: 0.5px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+.editBtn:hover { background: rgba(255,255,255,0.05); }
+
+.editActions { display: flex; gap: 8px; }
+
+.cancelBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 99px);
+  border: 0.5px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.saveBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 99px);
+  border: none;
+  background: var(--accent, #C4973F);
+  color: #000;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.saveBtn:disabled { opacity: 0.6; }
+
+.bioInput {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-md, 8px);
+  border: 0.5px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  resize: vertical;
+  min-height: 60px;
+  margin-top: 4px;
+  font-family: inherit;
+}
+.bioInput:focus { outline: none; border-color: var(--accent); }
+
+.subscribeBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 99px);
+  border: none;
+  background: var(--accent, #C4973F);
+  color: #000;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}

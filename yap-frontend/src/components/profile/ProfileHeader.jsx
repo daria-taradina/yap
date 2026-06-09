@@ -1,35 +1,26 @@
-import { useState } from 'react';
 import styles from './ProfileHeader.module.css';
-
-/**
- * ProfileHeader
- *
- * Props:
- *   profile {object}  — shape from ProfileData DTO:
- *     - userId        {number}
- *     - username      {string}
- *     - bio           {string}
- *     - bannerUrl     {string}   optional
- *     - avatarUrl     {string}   optional
- *     - followerCount {number}
- *     - followingCount {number}
- *     - communityCount {number}
- *     - isOwnProfile  {boolean}  hides subscribe button
- *
- *   activeTab  {string}
- *   onTabChange {fn}
- */
 
 const TABS = ['Blog Posts', 'Forum Posts', 'Liked'];
 
 function formatCount(n) {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-  return String(n);
+  return String(n ?? 0);
 }
 
-export default function ProfileHeader({ profile, activeTab, onTabChange }) {
-  const [subscribed, setSubscribed] = useState(false);
-
+export default function ProfileHeader({
+  profile,
+  isOwnProfile,
+  editMode,
+  bioInput,
+  onBioChange,
+  onEditToggle,
+  onSaveBio,
+  saving,
+  onAvatarClick,
+  uploadingAvatar,
+  activeTab,
+  onTabChange,
+}) {
   const {
     username,
     bio,
@@ -38,12 +29,9 @@ export default function ProfileHeader({ profile, activeTab, onTabChange }) {
     followerCount = 0,
     followingCount = 0,
     communityCount = 0,
-    isOwnProfile = false,
   } = profile;
 
-  const initials = username
-    ? username.slice(0, 2).toUpperCase()
-    : '?';
+  const initials = username ? username.slice(0, 2).toUpperCase() : '?';
 
   return (
     <div className={styles.header}>
@@ -54,36 +42,65 @@ export default function ProfileHeader({ profile, activeTab, onTabChange }) {
           : <div className={styles.bannerFallback} />}
       </div>
 
-      {/* Avatar — overlaps banner */}
+      {/* Avatar */}
       <div className={styles.avatarWrap}>
-        <div className={styles.avatar}>
-          {avatarUrl
-            ? <img src={avatarUrl} alt={username} />
-            : initials}
+        <div
+          className={`${styles.avatar} ${editMode ? styles.avatarEditable : ''}`}
+          onClick={onAvatarClick}
+          title={editMode ? 'Click to change photo' : undefined}
+        >
+          {uploadingAvatar ? (
+            <span className={styles.uploading}>...</span>
+          ) : avatarUrl ? (
+            <img src={avatarUrl} alt={username} />
+          ) : initials}
+          {editMode && (
+            <div className={styles.avatarOverlay}>
+              <i className="ti ti-camera" />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Name + subscribe */}
+      {/* Name row */}
       <div className={styles.bodyRow}>
         <div className={styles.identityBlock}>
           <span className={styles.displayName}>{username}</span>
           <span className={styles.username}>@{username}</span>
         </div>
 
-        {!isOwnProfile && (
-          <button
-            className={`${styles.subscribeBtn} ${subscribed ? styles.subscribed : ''}`}
-            onClick={() => setSubscribed((v) => !v)}
-          >
-            {subscribed ? 'Subscribed' : 'Subscribe'}
-          </button>
+        {isOwnProfile ? (
+          editMode ? (
+            <div className={styles.editActions}>
+              <button className={styles.cancelBtn} onClick={onEditToggle}>Cancel</button>
+              <button className={styles.saveBtn} onClick={onSaveBio} disabled={saving}>
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          ) : (
+            <button className={styles.editBtn} onClick={onEditToggle}>
+              <i className="ti ti-edit" /> Edit profile
+            </button>
+          )
+        ) : (
+          <button className={styles.subscribeBtn}>Follow</button>
         )}
       </div>
 
       {/* Bio */}
-      {bio && <p className={styles.bio}>{bio}</p>}
+      {editMode ? (
+        <textarea
+          className={styles.bioInput}
+          placeholder="Write a short bio..."
+          value={bioInput}
+          onChange={e => onBioChange(e.target.value)}
+          maxLength={150}
+        />
+      ) : (
+        bio && <p className={styles.bio}>{bio}</p>
+      )}
 
-      {/* Stats: followers · following · spaces */}
+      {/* Stats */}
       <div className={styles.stats}>
         <div className={styles.stat}>
           <span className={styles.statNum}>{formatCount(followerCount)}</span>
@@ -101,7 +118,7 @@ export default function ProfileHeader({ profile, activeTab, onTabChange }) {
         </div>
       </div>
 
-      {/* Tab bar */}
+      {/* Tabs */}
       <div className={styles.tabs}>
         {TABS.map((tab) => (
           <button

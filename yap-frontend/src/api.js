@@ -19,8 +19,9 @@ export async function apiFetch(path, options = {}) {
 
   if (res.status === 401) {
     localStorage.removeItem('yap_token');
+    localStorage.removeItem('yap_user');
     window.location.href = '/login';
-    return;
+    throw new Error('Unauthorized');  // throw instead of return undefined
   }
 
   return res;
@@ -72,4 +73,17 @@ export const api = {
   getUserBlogPosts: (userId) => apiFetch(`/posts/profile/${userId}`),
   getUserPosts: (userId) => apiFetch(`/posts/user/${userId}/community`),
   getUserLiked: (userId) => apiFetch(`/posts/liked-by/${userId}`),
+
+  // Notifications
+  getNotifications: () => apiFetch('/notifications'),
+  getUnreadCount: () => apiFetch('/notifications/unread-count'),
+  markNotificationsRead: () => apiFetch('/notifications/mark-all-read', { method: 'POST' }),
+
+  // Search
+  searchPosts: (q) => apiFetch(`/posts/search?q=${encodeURIComponent(q)}`),
+  searchSpaces: (q) => apiFetch(`/spaces?search=${encodeURIComponent(q)}`),
+  
+  // Profile edit
+  updateBio: (bio) => apiFetch('/users/me/bio', { method: 'PATCH', body: JSON.stringify({ bio }) }),
+  updateAvatar: (url) => apiFetch('/users/me/avatar', { method: 'PATCH', body: JSON.stringify({ url }) }),
 };

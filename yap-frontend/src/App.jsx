@@ -13,6 +13,7 @@ import PostDetailPage       from './pages/PostDetailPage';
 import CreateBlogPostPage   from './pages/CreateBlogPostPage';
 import CreateDiscussionPage from './pages/CreateDiscussionPage';
 import CreateSpacePage      from './pages/CreateSpacePage';
+import SearchPage           from './pages/SearchPage';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('yap_token');
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/create-post/blog"       element={<CreateBlogPostPage />} />
           <Route path="/create-post/discussion" element={<CreateDiscussionPage />} />
           <Route path="/create-space"           element={<CreateSpacePage />} />
+          <Route path="/search"                 element={<SearchPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

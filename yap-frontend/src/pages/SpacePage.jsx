@@ -15,6 +15,8 @@ export default function SpacePage() {
   const [error, setError] = useState('');
   const [joining, setJoining] = useState(false);
 
+  const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
+
   useEffect(() => {
     setLoading(true);
     api.getSpace(spaceName)
@@ -59,8 +61,8 @@ export default function SpacePage() {
   }
 
   if (loading) return <div className={styles.state}>Loading...</div>;
-  if (error)   return <div className={styles.state}>{error}</div>;
-  if (!space)  return (
+  if (error) return <div className={styles.state}>{error}</div>;
+  if (!space) return (
     <div className={styles.layout}>
       <div className={styles.feed}>
         <div className={styles.emptyState}>
@@ -71,6 +73,8 @@ export default function SpacePage() {
     </div>
   );
 
+  const isOwner = space.ownerId === currentUser.userId;
+
   return (
     <div className={styles.layout}>
       <div className={styles.feed}>
@@ -79,15 +83,6 @@ export default function SpacePage() {
             <h1 className={styles.spaceTitle}>w/{space.name}</h1>
             <p className={styles.spaceDesc}>{space.description}</p>
           </div>
-          {space.member ? (
-            <button className={styles.leaveBtn} onClick={handleLeave} disabled={joining}>
-              {joining ? '...' : 'Leave'}
-            </button>
-          ) : (
-            <button className={styles.joinBtn} onClick={handleJoin} disabled={joining}>
-              {joining ? '...' : 'Join'}
-            </button>
-          )}
         </div>
 
         {space.member && (
@@ -110,7 +105,13 @@ export default function SpacePage() {
       </div>
 
       <div className={styles.sidebar}>
-        <SpaceSidebar space={space} />
+        <SpaceSidebar
+          space={space}
+          isOwner={isOwner}
+          joining={joining}
+          onJoin={handleJoin}
+          onLeave={handleLeave}
+        />
       </div>
     </div>
   );
