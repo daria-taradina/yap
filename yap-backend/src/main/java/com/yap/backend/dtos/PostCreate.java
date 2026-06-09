@@ -6,10 +6,8 @@ import java.util.List;
 
 public class PostCreate {
 
-    @NotNull(message = "Community is required")
     private Integer communityId;
 
-    @NotBlank(message = "Title is required")
     @Size(max = 300, message = "Title must not exceed 300 characters")
     private String title;
 

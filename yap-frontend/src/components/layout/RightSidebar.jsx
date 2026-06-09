@@ -1,43 +1,42 @@
-import Avatar from '../common/Avatar';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../../api';
 import styles from './RightSidebar.module.css';
 
-// TODO: replace with real API data
-const TRENDING = [
-  { tag: '#SoftLife',      count: '4.2k' },
-  { tag: '#WomenInTech',   count: '2.8k' },
-  { tag: '#BoundaryWork',  count: '1.9k' },
-  { tag: '#QuietQuitting', count: '1.4k' },
-];
-
-const SUGGESTED = [
-  { name: 'noelle.writes', handle: '@noelle.writes', topic: 'Wellness' },
-  { name: 'tasha.voices',  handle: '@tasha.voices',  topic: 'Career'   },
-  { name: 'Mira Osei',     handle: '@mira.osei',     topic: 'Mindset'  },
-];
+function formatCount(n) {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return String(n);
+}
 
 export default function RightSidebar() {
-  return (
-    <aside className={styles.sidebar} aria-label="Trending and suggestions">
-      {/* Trending */}
-      <div className={styles.sectionLabel}>Trending</div>
-      {TRENDING.map(({ tag, count }) => (
-        <div key={tag} className={styles.trendItem}>
-          <span>{tag}</span>
-          <span className={styles.trendCount}>{count}</span>
-        </div>
-      ))}
+  const navigate = useNavigate();
+  const [trending, setTrending] = useState([]);
 
-      {/* Suggested */}
-      <div className={styles.sectionLabel}>Suggested</div>
-      {SUGGESTED.map(({ name, handle, topic }) => (
-        <div key={handle} className={styles.suggestedItem}>
-          <Avatar name={name} size="sm" />
-          <div className={styles.suggestedInfo}>
-            <span className={styles.suggestedName}>{handle}</span>
-            <span className={styles.suggestedSub}>{topic}</span>
+  useEffect(() => {
+    api.getTrendingTags()
+      .then((res) => res.json())
+      .then((data) => setTrending(Array.isArray(data) ? data.slice(0, 6) : []))
+      .catch(() => setTrending([]));
+  }, []);
+
+  return (
+    <aside className={styles.sidebar} aria-label="Trending topics">
+      <div className={styles.sectionLabel}>Trending</div>
+      {trending.length === 0 ? (
+        <div className={styles.trendItem} style={{ opacity: 0.5 }}>No trending topics yet</div>
+      ) : (
+        trending.map(({ tagName, postCount }) => (
+          <div
+            key={tagName}
+            className={styles.trendItem}
+            onClick={() => navigate(`/?tag=${tagName}`)}
+            style={{ cursor: 'pointer' }}
+          >
+            <span>#{tagName}</span>
+            <span className={styles.trendCount}>{formatCount(postCount)}</span>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </aside>
   );
 }

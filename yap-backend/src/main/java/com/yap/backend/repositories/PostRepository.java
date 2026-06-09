@@ -194,4 +194,40 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
         ORDER BY p.createdAt DESC
     """)
     List<Post> findPostsByCommunity(@Param("communityId") Integer communityId);
+
+    // ---------------------------------------------------------------
+    // ALL DISCUSSION POSTS from communities the user is a member of
+    // newest first
+    // ---------------------------------------------------------------
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        LEFT JOIN FETCH p.author
+        LEFT JOIN FETCH p.community
+        LEFT JOIN FETCH p.tags pt
+        LEFT JOIN FETCH pt.tag
+        WHERE p.isDeleted = false
+          AND p.postType = com.yap.backend.enums.PostType.DISCUSSION
+          AND p.community.communityId IN (
+              SELECT cm.id.communityId FROM CommunityMember cm
+              WHERE cm.id.userId = :userId
+          )
+        ORDER BY p.createdAt DESC
+    """)
+    List<Post> findDiscussionPostsForUser(@Param("userId") Integer userId);
+
+    // ---------------------------------------------------------------
+    // ALL BLOG POSTS (community IS NULL, postType = BLOG)
+    // newest first
+    // ---------------------------------------------------------------
+    @Query("""
+        SELECT p FROM Post p
+        LEFT JOIN FETCH p.author
+        LEFT JOIN FETCH p.tags pt
+        LEFT JOIN FETCH pt.tag
+        WHERE p.isDeleted = false
+          AND p.postType = com.yap.backend.enums.PostType.BLOG
+          AND p.community IS NULL
+        ORDER BY p.createdAt DESC
+    """)
+    List<Post> findAllBlogPosts();
 }

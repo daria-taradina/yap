@@ -1,17 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BlogEditor from '../components/post/BlogEditor';
+import { api } from '../api';
 import styles from './CreateBlogPostPage.module.css';
 
-/**
- * CreateBlogPostPage  —  /create-post/blog
- *
- * Blog post creation with TipTap rich editor.
- * Supports draft saving and publishing.
- *
- * TODO: POST /api/posts
- *   { post_type: 'BLOG', title, content (TipTap JSON), tags, is_published }
- */
 export default function CreateBlogPostPage() {
   const navigate = useNavigate();
 
@@ -21,7 +13,7 @@ export default function CreateBlogPostPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(isPublished) {
+  async function handleSubmit() {
     if (!title.trim()) { setError('Your post needs a title.'); return; }
     if (!content) { setError('Write something before publishing.'); return; }
 
@@ -33,19 +25,21 @@ export default function CreateBlogPostPage() {
     setSubmitting(true);
     setError('');
     try {
-      // TODO: POST /api/posts
-      // await fetch('/api/posts', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json', ...authHeaders },
-      //   body: JSON.stringify({
-      //     post_type: 'BLOG',
-      //     title,
-      //     content: JSON.stringify(content),
-      //     tags: tagList,
-      //     is_published: isPublished,
-      //   }),
-      // });
-      navigate('/');
+      const res = await api.createPost({
+        postType: 'BLOG',
+        title,
+        contentText: JSON.stringify(content),
+        tags: tagList,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Failed to publish.');
+        return;
+      }
+
+      const data = await res.json();
+      navigate(`/post/${data.postId}`);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -55,7 +49,6 @@ export default function CreateBlogPostPage() {
 
   return (
     <div className={styles.page}>
-      {/* Title — editorial, minimal */}
       <input
         className={styles.titleInput}
         placeholder="Title"
@@ -63,10 +56,8 @@ export default function CreateBlogPostPage() {
         onChange={(e) => { setTitle(e.target.value); setError(''); }}
       />
 
-      {/* Rich editor */}
       <BlogEditor onChange={setContent} />
 
-      {/* Tags */}
       <div className={styles.field}>
         <label className={styles.label}>Tags</label>
         <input
@@ -85,15 +76,8 @@ export default function CreateBlogPostPage() {
           Cancel
         </button>
         <button
-          className={styles.draftBtn}
-          onClick={() => handleSubmit(false)}
-          disabled={submitting}
-        >
-          Save Draft
-        </button>
-        <button
           className={styles.publishBtn}
-          onClick={() => handleSubmit(true)}
+          onClick={handleSubmit}
           disabled={submitting}
         >
           {submitting ? 'Publishing...' : 'Publish'}

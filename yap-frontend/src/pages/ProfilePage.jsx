@@ -7,9 +7,10 @@ import styles from './ProfilePage.module.css';
 
 export default function ProfilePage() {
   const { username } = useParams();
-  const [activeTab, setActiveTab] = useState('Posts');
+  const [activeTab, setActiveTab] = useState('Blog Posts');
   const [profile, setProfile] = useState(null);
-  const [posts, setPosts] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [forumPosts, setForumPosts] = useState([]);
   const [liked, setLiked] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,11 +19,13 @@ export default function ProfilePage() {
       .then(r => r.json())
       .then(async (profileData) => {
         setProfile(profileData);
-        const [postsRes, likedRes] = await Promise.all([
+        const [blogRes, forumRes, likedRes] = await Promise.all([
+          api.getUserBlogPosts(profileData.userId).then(r => r.json()),
           api.getUserPosts(profileData.userId).then(r => r.json()),
           api.getUserLiked(profileData.userId).then(r => r.json()),
         ]);
-        setPosts(Array.isArray(postsRes) ? postsRes : []);
+        setBlogPosts(Array.isArray(blogRes) ? blogRes : []);
+        setForumPosts(Array.isArray(forumRes) ? forumRes : []);
         setLiked(Array.isArray(likedRes) ? likedRes : []);
       })
       .catch(() => setProfile(null))
@@ -36,7 +39,10 @@ export default function ProfilePage() {
     </div>
   );
 
-  const currentPosts = activeTab === 'Posts' ? posts : liked;
+  const currentPosts =
+    activeTab === 'Blog Posts'   ? blogPosts  :
+    activeTab === 'Forum Posts'  ? forumPosts :
+    liked;
 
   return (
     <div className={styles.page}>

@@ -14,7 +14,9 @@ public class CommentCreate {
     
     @Pattern(regexp = "^https://media[0-9]*\\.giphy\\.com/.*$", message = "Invalid GIF URL")
     private String gifUrl;
-    
+
+    private Integer parentCommentId;
+
     // getters & setters
 	public Integer getPostId() {
 		return postId;
@@ -38,6 +40,14 @@ public class CommentCreate {
 
 	public void setGifUrl(String gifUrl) {
 		this.gifUrl = gifUrl;
+	}
+
+	public Integer getParentCommentId() {
+		return parentCommentId;
+	}
+
+	public void setParentCommentId(Integer parentCommentId) {
+		this.parentCommentId = parentCommentId;
 	}
 	
 }

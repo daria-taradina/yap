@@ -80,4 +80,14 @@ public class PostManagementController {
     public ResponseEntity<List<PostSummary>> getPostsByCommunity(@PathVariable Integer communityId) {
         return ResponseEntity.ok(postManagementService.getPostsByCommunity(communityId));
     }
+
+    @GetMapping("/forums/{userId}")
+    public ResponseEntity<List<PostSummary>> getForumsFeed(@PathVariable Integer userId) {
+        return ResponseEntity.ok(postManagementService.getForumsFeedForUser(userId));
+    }
+
+    @GetMapping("/blogs")
+    public ResponseEntity<List<PostSummary>> getAllBlogs() {
+        return ResponseEntity.ok(postManagementService.getAllBlogPosts());
+    }
 }

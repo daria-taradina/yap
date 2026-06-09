@@ -23,7 +23,7 @@ public class Post {
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "community_id", referencedColumnName = "community_id", nullable = false)
+    @JoinColumn(name = "community_id", referencedColumnName = "community_id", nullable = true)
     private Community community;
 
     @Enumerated(EnumType.STRING)

@@ -4,6 +4,7 @@ package com.yap.backend.services;
 import com.yap.backend.dtos.*;
 import com.yap.backend.entities.*;
 import com.yap.backend.enums.CommunityMemberRole;
+import com.yap.backend.enums.PostType;
 import com.yap.backend.exceptions.*;
 import com.yap.backend.keys.*;
 import com.yap.backend.repositories.*;
@@ -47,9 +48,20 @@ public class PostManagementService extends BaseService {
         post.setAuthor(currentUser);
         post.setContentText(dto.getContentText());
         post.setGifUrl(dto.getGifUrl());
-        post.setPostType(dto.getPostType());
+        post.setPostType(dto.getPostType() != null ? dto.getPostType() : PostType.DISCUSSION);
 
-        if (dto.getCommunityId() != null) {
+        boolean isBlog = post.getPostType() == PostType.BLOG;
+
+        if (dto.getTitle() == null || dto.getTitle().isBlank())
+            throw new InvalidInputException("Title is required");
+
+        post.setTitle(dto.getTitle());
+
+        if (!isBlog) {
+            // DISCUSSION posts must belong to a community
+            if (dto.getCommunityId() == null)
+                throw new InvalidInputException("A space is required for discussion posts");
+
             Community community = communityRepository.findById(dto.getCommunityId())
                 .orElseThrow(() -> new ResourceNotFoundException("Space not found: " + dto.getCommunityId()));
 
@@ -57,12 +69,9 @@ public class PostManagementService extends BaseService {
                 new CommunityMemberId(dto.getCommunityId(), currentUser.getUserId()));
             if (!isMember) throw new UnauthorizedException("You must be a member to post here");
 
-            if (dto.getTitle() == null || dto.getTitle().isBlank())
-                throw new InvalidInputException("Title is required for space posts");
-
             post.setCommunity(community);
-            post.setTitle(dto.getTitle());
         }
+        // BLOG posts have no community — community stays null
 
         Post saved = postRepository.save(post);
         List<String> tagNames = postTagService.saveTags(saved, dto.getTags());
@@ -172,6 +181,20 @@ public class PostManagementService extends BaseService {
     public List<PostSummary> getPostsLikedByUser(Integer userId) {
         User currentUser = getAuthenticatedUser();
         return postRepository.findPostsLikedByUser(userId)
+            .stream().map(p -> mapToSummary(p, currentUser.getUserId())).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostSummary> getForumsFeedForUser(Integer userId) {
+        User currentUser = getAuthenticatedUser();
+        return postRepository.findDiscussionPostsForUser(userId)
+            .stream().map(p -> mapToSummary(p, currentUser.getUserId())).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostSummary> getAllBlogPosts() {
+        User currentUser = getAuthenticatedUser();
+        return postRepository.findAllBlogPosts()
             .stream().map(p -> mapToSummary(p, currentUser.getUserId())).collect(Collectors.toList());
     }
 

@@ -52,6 +52,8 @@ export const api = {
 
   // Posts
   getFeed: (userId) => apiFetch(`/posts/feed/${userId}`),
+  getForumsFeed: (userId) => apiFetch(`/posts/forums/${userId}`),
+  getBlogsFeed: () => apiFetch('/posts/blogs'),
   getSpacePosts: (communityId) => apiFetch(`/posts/community/${communityId}`),
   createPost: (body) => apiFetch('/posts', { method: 'POST', body: JSON.stringify(body) }),
   likePost: (id) => apiFetch(`/posts/${id}/like`, { method: 'POST' }),
@@ -67,6 +69,7 @@ export const api = {
   unlikeComment: (id) => apiFetch(`/posts/comments/${id}/like`, { method: 'DELETE' }),
   getTrendingTags: () => apiFetch('/posts/trending'),
   getUserProfile: (username) => apiFetch(`/users/${username}`),
+  getUserBlogPosts: (userId) => apiFetch(`/posts/profile/${userId}`),
   getUserPosts: (userId) => apiFetch(`/posts/user/${userId}/community`),
   getUserLiked: (userId) => apiFetch(`/posts/liked-by/${userId}`),
 };

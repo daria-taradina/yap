@@ -14,6 +14,8 @@ function useTopbarTitle(pathname) {
   if (pathname.startsWith('/w/')) return 'Forum';
   if (pathname.startsWith('/blog/')) return 'Blog';
   if (pathname.startsWith('/explore')) return 'Explore';
+  if (pathname.startsWith('/forums')) return 'Forums';
+  if (pathname.startsWith('/blogs')) return 'Blogs';
   if (pathname.startsWith('/create-space')) return 'Create Space';
   if (pathname.startsWith('/create-post/blog')) return 'New Blog Post';
   if (pathname.startsWith('/create-post/discussion')) return 'New Discussion';
@@ -25,8 +27,8 @@ export default function AppLayout() {
   const { pathname } = useLocation();
   const title = useTopbarTitle(pathname);
 
-  // TODO: replace with real auth context / user store
-  const currentUser = { displayName: 'Daria', avatarUrl: null };
+  // Read current user from localStorage (set on login/register)
+  const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
 
   return (
     <div className={styles.shell}>
@@ -44,7 +46,7 @@ export default function AppLayout() {
               <i className="ti ti-bell" aria-hidden="true" />
               <span className={styles.notifDot} />
             </button>
-            <Avatar name={currentUser.displayName} src={currentUser.avatarUrl} size="sm" />
+            <Avatar name={currentUser.username || '?'} src={currentUser.avatarUrl} size="sm" />
           </div>
         </header>
 
