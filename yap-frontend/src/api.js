@@ -86,4 +86,15 @@ export const api = {
   // Profile edit
   updateBio: (bio) => apiFetch('/users/me/bio', { method: 'PATCH', body: JSON.stringify({ bio }) }),
   updateAvatar: (url) => apiFetch('/users/me/avatar', { method: 'PATCH', body: JSON.stringify({ url }) }),
+
+  // Post delete
+  deletePost: (id) => apiFetch(`/posts/${id}`, { method: 'DELETE' }),
+  deleteComment: (id) => apiFetch(`/posts/comments/${id}`, { method: 'DELETE' }),
+
+  // Moderation
+  classifyContent: (content) => apiFetch('/moderation/classify', { method: 'POST', body: JSON.stringify({ content }) }),
+  getModerationQueue: () => apiFetch('/moderation/queue'),
+  getAllDecisions: () => apiFetch('/moderation/decisions'),
+  overrideDecision: (decisionId, action) => apiFetch(`/moderation/decisions/${decisionId}/override`, { method: 'POST', body: JSON.stringify({ action }) }),
+  reportContent: (body) => apiFetch('/moderation/report', { method: 'POST', body: JSON.stringify(body) }),
 };

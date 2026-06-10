@@ -14,6 +14,9 @@ export default function PostDetailPage() {
   const [likeCount, setLikeCount] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportReason, setReportReason] = useState('HARASSMENT');
+  const [reportDetails, setReportDetails] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -53,6 +56,23 @@ export default function PostDetailPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!window.confirm('Delete this post?')) return;
+    try {
+      await api.deletePost(postId);
+      navigate('/');
+    } catch {}
+  }
+
+  async function handleReport() {
+    try {
+      await api.reportContent({ postId: parseInt(postId), reason: reportReason, details: reportDetails });
+      setShowReport(false);
+      setReportDetails('');
+      alert('Report submitted. Thank you.');
+    } catch {}
+  }
+
   if (loading) return <div className={styles.state}>Loading...</div>;
   if (!post)   return <div className={styles.state}>Post not found.</div>;
 
@@ -87,7 +107,36 @@ export default function PostDetailPage() {
           <button className={styles.actionBtn}>
             <i className="ti ti-message-circle" /> {comments.length}
           </button>
+          <button className={styles.actionBtn} onClick={() => setShowReport(v => !v)}>
+            <i className="ti ti-flag" /> Report
+          </button>
+          {post.canDelete && (
+            <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={handleDelete}>
+              <i className="ti ti-trash" /> Delete
+            </button>
+          )}
         </div>
+
+        {showReport && (
+          <div className={styles.reportForm}>
+            <select value={reportReason} onChange={e => setReportReason(e.target.value)} className={styles.reportSelect}>
+              <option value="HARASSMENT">Harassment</option>
+              <option value="HATE_SPEECH">Hate Speech</option>
+              <option value="SPAM">Spam</option>
+              <option value="MISINFORMATION">Misinformation</option>
+              <option value="SELF_HARM">Self Harm</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <textarea
+              className={styles.composerInput}
+              placeholder="Optional details..."
+              value={reportDetails}
+              onChange={e => setReportDetails(e.target.value)}
+              rows={2}
+            />
+            <button className={styles.submitBtn} onClick={handleReport}>Submit Report</button>
+          </div>
+        )}
       </div>
 
       <div className={styles.commentsSection}>

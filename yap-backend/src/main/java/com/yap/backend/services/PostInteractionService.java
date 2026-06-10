@@ -4,9 +4,12 @@ package com.yap.backend.services;
 import com.yap.backend.dtos.*;
 import com.yap.backend.entities.*;
 import com.yap.backend.enums.CommunityMemberRole;
+import com.yap.backend.enums.ModerationAction;
 import com.yap.backend.exceptions.*;
 import com.yap.backend.keys.*;
 import com.yap.backend.repositories.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
@@ -14,24 +17,29 @@ import java.util.*;
 @Service
 public class PostInteractionService extends BaseService {
 
+    private static final Logger log = LoggerFactory.getLogger(PostInteractionService.class);
+
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final ModerationAIService moderationAIService;
 
     public PostInteractionService(PostRepository postRepository,
                                    PostLikeRepository postLikeRepository,
                                    CommentRepository commentRepository,
                                    CommunityMemberRepository communityMemberRepository,
                                    CommentLikeRepository commentLikeRepository,
-                                   UserRepository userRepository) {
+                                   UserRepository userRepository,
+                                   ModerationAIService moderationAIService) {
         super(userRepository);
         this.postRepository = postRepository;
         this.postLikeRepository = postLikeRepository;
         this.commentRepository = commentRepository;
         this.communityMemberRepository = communityMemberRepository;
         this.commentLikeRepository = commentLikeRepository;
+        this.moderationAIService = moderationAIService;
     }
 
     @Transactional
@@ -82,6 +90,24 @@ public class PostInteractionService extends BaseService {
         Comment saved = commentRepository.save(comment);
         post.setCommentCount(post.getCommentCount() + 1);
         postRepository.save(post);
+
+        // AI Content Moderation for comments
+        if (saved.getContentText() != null && !saved.getContentText().isBlank()) {
+            try {
+                ModerationResult modResult = moderationAIService.analyzeComment(saved);
+                if (modResult.action() == ModerationAction.REVIEW) {
+                    saved.setFlagged(true);
+                    commentRepository.save(saved);
+                } else if (modResult.action() == ModerationAction.HIDE) {
+                    saved.setFlagged(true);
+                    saved.setRemoved(true);
+                    commentRepository.save(saved);
+                }
+            } catch (Exception e) {
+                log.warn("AI moderation check failed for comment {}: {}", saved.getCommentId(), e.getMessage());
+            }
+        }
+
         return mapToDTO(saved, currentUser.getUserId());
     }
 

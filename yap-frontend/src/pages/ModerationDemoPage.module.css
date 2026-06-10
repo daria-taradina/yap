@@ -1,0 +1,280 @@
+/* ─────────────────────────────────────────────
+   ModerationDemoPage.module.css
+   ───────────────────────────────────────────── */
+
+.page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px 0;
+  text-align: left;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 22px;
+  margin: 0 0 6px;
+  color: var(--text-h);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.demoArea {
+  margin-bottom: 28px;
+}
+
+.inputSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: var(--sans);
+  color: var(--text-h);
+  background: var(--bg);
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.classifyBtn {
+  align-self: flex-start;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.classifyBtn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.classifyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Result card */
+.resultCard {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--social-bg);
+}
+
+.resultHeader {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.resultGrid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.resultItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resultLabel {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.reasoning {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.reasoning p {
+  font-size: 13px;
+  color: var(--text-h);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* Badges */
+.badge, .badgeSm {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badgeSm {
+  font-size: 10px;
+  padding: 2px 8px;
+}
+
+/* Action colors */
+.action_ALLOW {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.action_REVIEW {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.action_HIDE {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+/* Risk colors */
+.risk_LOW {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.risk_MEDIUM {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.risk_HIGH {
+  background: rgba(249, 115, 22, 0.15);
+  color: #ea580c;
+}
+
+.risk_CRITICAL {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+/* Category colors */
+.cat_SUPPORT_SEEKING, .cat_PERSONAL_STORY, .cat_HEALTH_DISCUSSION {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+}
+
+.cat_NORMAL_DISCUSSION, .cat_EDUCATIONAL {
+  background: rgba(107, 114, 128, 0.12);
+  color: #4b5563;
+}
+
+.cat_HARASSMENT, .cat_HATE_SPEECH, .cat_THREAT {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.cat_MISINFORMATION {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.cat_SPAM {
+  background: rgba(107, 114, 128, 0.12);
+  color: #6b7280;
+}
+
+.cat_SELF_HARM {
+  background: rgba(168, 85, 247, 0.12);
+  color: #7c3aed;
+}
+
+/* Examples */
+.examples {
+  margin-bottom: 28px;
+}
+
+.exampleGrid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.exampleBtn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg);
+  font-size: 12px;
+  color: var(--text-h);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.exampleBtn:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* History */
+.historySection {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.historyItem {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.historyContent {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.historyBadges {
+  display: flex;
+  gap: 6px;
+}
+
+/* Error */
+.errorCard {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  font-size: 13px;
+}

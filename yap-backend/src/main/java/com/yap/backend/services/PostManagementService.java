@@ -4,10 +4,13 @@ package com.yap.backend.services;
 import com.yap.backend.dtos.*;
 import com.yap.backend.entities.*;
 import com.yap.backend.enums.CommunityMemberRole;
+import com.yap.backend.enums.ModerationAction;
 import com.yap.backend.enums.PostType;
 import com.yap.backend.exceptions.*;
 import com.yap.backend.keys.*;
 import com.yap.backend.repositories.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -17,12 +20,15 @@ import java.util.stream.Collectors;
 @Service
 public class PostManagementService extends BaseService {
 
+    private static final Logger log = LoggerFactory.getLogger(PostManagementService.class);
+
     private final PostRepository postRepository;
     private final CommunityRepository communityRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final PostTagService postTagService;
     private final PostLikeRepository postLikeRepository;
     private final UserFollowRepository userFollowRepository;
+    private final ModerationAIService moderationAIService;
 
     public PostManagementService(PostRepository postRepository,
                                   CommunityRepository communityRepository,
@@ -30,7 +36,8 @@ public class PostManagementService extends BaseService {
                                   PostTagService postTagService,
                                   PostLikeRepository postLikeRepository,
                                   UserFollowRepository userFollowRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  ModerationAIService moderationAIService) {
         super(userRepository);
         this.postRepository = postRepository;
         this.communityRepository = communityRepository;
@@ -38,6 +45,7 @@ public class PostManagementService extends BaseService {
         this.postTagService = postTagService;
         this.postLikeRepository = postLikeRepository;
         this.userFollowRepository = userFollowRepository;
+        this.moderationAIService = moderationAIService;
     }
 
     @Transactional
@@ -75,6 +83,23 @@ public class PostManagementService extends BaseService {
 
         Post saved = postRepository.save(post);
         List<String> tagNames = postTagService.saveTags(saved, dto.getTags());
+
+        // Layer 2: AI Content Moderation via Amazon Bedrock
+        try {
+            ModerationResult modResult = moderationAIService.analyzePost(saved);
+            if (modResult.action() == ModerationAction.REVIEW) {
+                saved.setFlagged(true);
+                postRepository.save(saved);
+            } else if (modResult.action() == ModerationAction.HIDE) {
+                saved.setFlagged(true);
+                saved.setRemoved(true);
+                postRepository.save(saved);
+            }
+        } catch (Exception e) {
+            log.warn("AI moderation check failed for post {}: {}", saved.getPostId(), e.getMessage());
+            // Don't block post creation if AI is unavailable
+        }
+
         return mapToSummary(saved, tagNames, currentUser.getUserId());
     }
 

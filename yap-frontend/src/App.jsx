@@ -14,6 +14,8 @@ import CreateBlogPostPage   from './pages/CreateBlogPostPage';
 import CreateDiscussionPage from './pages/CreateDiscussionPage';
 import CreateSpacePage      from './pages/CreateSpacePage';
 import SearchPage           from './pages/SearchPage';
+import ModerationDemoPage   from './pages/ModerationDemoPage';
+import ModQueuePage         from './pages/ModQueuePage';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('yap_token');
@@ -41,6 +43,8 @@ export default function App() {
           <Route path="/create-post/discussion" element={<CreateDiscussionPage />} />
           <Route path="/create-space"           element={<CreateSpacePage />} />
           <Route path="/search"                 element={<SearchPage />} />
+          <Route path="/moderation"             element={<ModerationDemoPage />} />
+          <Route path="/mod-queue"              element={<ModQueuePage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -10,6 +10,8 @@ const DISCOVER_LINKS = [
   { to: '/explore', label: 'Explore', icon: 'ti ti-sparkles'  },
   { to: '/forums',  label: 'Forums',  icon: 'ti ti-message-2' },
   { to: '/blogs',   label: 'Blogs',   icon: 'ti ti-notebook'  },
+  { to: '/moderation', label: 'AI Mod', icon: 'ti ti-shield'  },
+  { to: '/mod-queue',  label: 'Mod Queue', icon: 'ti ti-list-check' },
 ];
 
 const SPACE_COLORS = ['#C4973F', '#6B8BAD', '#7A9E7E', '#A07AB5', '#9E7A7A'];
