@@ -293,3 +293,11 @@
 }
 
 .logoutBtn:hover { color: var(--color-text-danger, #e05c5c); }
+
+
+/* ─── Mobile: hide left sidebar ─── */
+@media (max-width: 768px) {
+  .navbar {
+    display: none;
+  }
+}

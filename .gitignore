@@ -29,6 +29,9 @@ yap-backend/target/
 *.jar
 *.war
 
+# jqwik property test database
+.jqwik-database
+
 # IntelliJ
 *.iml
 .idea/
@@ -44,3 +47,6 @@ yap-backend/src/main/resources/application-local.properties
 
 # OS
 Thumbs.db
+
+# Hackathon
+yap-dev

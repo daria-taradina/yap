@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import RightSidebar from './RightSidebar';
+import BottomNav from './BottomNav';
 import Avatar from '../common/Avatar';
 import { api } from '../../api';
 import styles from './AppLayout.module.css';
@@ -301,6 +302,7 @@ export default function AppLayout() {
       </div>
 
       <RightSidebar />
+      <BottomNav />
     </div>
   );
 }

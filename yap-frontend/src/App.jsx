@@ -8,9 +8,7 @@ import ProfilePage          from './pages/ProfilePage';
 import SpacePage            from './pages/SpacePage';
 import ExplorePage          from './pages/ExplorePage';
 import ForumsPage           from './pages/ForumsPage';
-import BlogsPage            from './pages/BlogsPage';
 import PostDetailPage       from './pages/PostDetailPage';
-import CreateBlogPostPage   from './pages/CreateBlogPostPage';
 import CreateDiscussionPage from './pages/CreateDiscussionPage';
 import CreateSpacePage      from './pages/CreateSpacePage';
 import SearchPage           from './pages/SearchPage';
@@ -33,15 +31,17 @@ export default function App() {
           <Route path="/"                       element={<FeedPage />} />
           <Route path="/explore"                element={<ExplorePage />} />
           <Route path="/forums"                 element={<ForumsPage />} />
-          <Route path="/blogs"                  element={<BlogsPage />} />
           <Route path="/w/:spaceName"           element={<SpacePage />} />
-          <Route path="/blog/:username"         element={<ProfilePage />} />
           <Route path="/post/:postId"           element={<PostDetailPage />} />
-          <Route path="/create-post/blog"       element={<CreateBlogPostPage />} />
           <Route path="/create-post/discussion" element={<CreateDiscussionPage />} />
           <Route path="/create-space"           element={<CreateSpacePage />} />
           <Route path="/search"                 element={<SearchPage />} />
         </Route>
+
+        {/* Redirects for removed blog routes */}
+        <Route path="/blogs"              element={<Navigate to="/" replace />} />
+        <Route path="/create-post/blog"   element={<Navigate to="/" replace />} />
+        <Route path="/blog/:username"     element={<Navigate to="/" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

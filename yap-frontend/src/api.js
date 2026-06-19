@@ -69,6 +69,7 @@ export const api = {
   likeComment: (id) => apiFetch(`/posts/comments/${id}/like`, { method: 'POST' }),
   unlikeComment: (id) => apiFetch(`/posts/comments/${id}/like`, { method: 'DELETE' }),
   getTrendingTags: () => apiFetch('/posts/trending'),
+  getPostsByTag: (tagName) => apiFetch(`/posts/tag/${tagName}`),
   getUserProfile: (username) => apiFetch(`/users/${username}`),
   getUserBlogPosts: (userId) => apiFetch(`/posts/profile/${userId}`),
   getUserPosts: (userId) => apiFetch(`/posts/user/${userId}/community`),
@@ -83,6 +84,9 @@ export const api = {
   searchPosts: (q) => apiFetch(`/posts/search?q=${encodeURIComponent(q)}`),
   searchSpaces: (q) => apiFetch(`/spaces?search=${encodeURIComponent(q)}`),
   
+  // Delete post
+  deletePost: (postId) => apiFetch(`/posts/${postId}`, { method: 'DELETE' }),
+
   // Profile edit
   updateBio: (bio) => apiFetch('/users/me/bio', { method: 'PATCH', body: JSON.stringify({ bio }) }),
   updateAvatar: (url) => apiFetch('/users/me/avatar', { method: 'PATCH', body: JSON.stringify({ url }) }),

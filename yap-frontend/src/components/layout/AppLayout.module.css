@@ -214,3 +214,24 @@
 
 .userMenuDanger { color: #e05c5c; }
 .userMenuDanger:hover { background: rgba(224,92,92,0.08); }
+
+
+/* ─────────────────────────────────────────────
+   Mobile Responsive — ≤768px
+   Hides sidebars, desktop topbar; shows BottomNav
+   ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .shell {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  .topbar {
+    display: none;
+  }
+
+  .content {
+    padding: var(--space-3);
+    padding-bottom: 72px; /* space for BottomNav */
+  }
+}

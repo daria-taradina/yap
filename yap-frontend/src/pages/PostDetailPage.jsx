@@ -14,6 +14,8 @@ export default function PostDetailPage() {
   const [likeCount, setLikeCount] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -38,6 +40,23 @@ export default function PostDetailPage() {
         setLiked(true); setLikeCount(n => n + 1);
       }
     } catch {}
+  }
+
+  async function handleDelete() {
+    setDeleteError('');
+    try {
+      const res = await api.deletePost(postId);
+      if (!res.ok) throw new Error('Failed to delete');
+      // Navigate back to the space or home after successful delete
+      if (post.communityName) {
+        navigate(`/w/${post.communityName}`);
+      } else {
+        navigate('/');
+      }
+    } catch {
+      setDeleteError('Could not delete post. Please try again.');
+      setShowDeleteConfirm(false);
+    }
   }
 
   async function handleComment() {
@@ -80,6 +99,10 @@ export default function PostDetailPage() {
           </div>
         )}
 
+        {deleteError && (
+          <div className={styles.deleteError}>{deleteError}</div>
+        )}
+
         <div className={styles.actions}>
           <button className={`${styles.actionBtn} ${liked ? styles.liked : ''}`} onClick={handleLike}>
             <i className={liked ? 'ti ti-heart-filled' : 'ti ti-heart'} /> {likeCount}
@@ -87,7 +110,26 @@ export default function PostDetailPage() {
           <button className={styles.actionBtn}>
             <i className="ti ti-message-circle" /> {comments.length}
           </button>
+          {post.canDelete && (
+            <button
+              className={`${styles.actionBtn} ${styles.deleteBtn}`}
+              onClick={() => setShowDeleteConfirm(true)}
+              aria-label="Delete post"
+            >
+              <i className="ti ti-trash" /> Delete
+            </button>
+          )}
         </div>
+
+        {showDeleteConfirm && (
+          <div className={styles.confirmDialog}>
+            <p className={styles.confirmText}>Delete this post? This action cannot be undone.</p>
+            <div className={styles.confirmActions}>
+              <button className={styles.confirmCancelBtn} onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+              <button className={styles.confirmDeleteBtn} onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className={styles.commentsSection}>

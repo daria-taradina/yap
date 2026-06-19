@@ -1,0 +1,32 @@
+/* ─────────────────────────────────────────────
+   YAP  ·  Mobile Responsive Styles
+   Applied at viewport ≤768px
+   ───────────────────────────────────────────── */
+
+/* Requirement 3.7: Prevent horizontal overflow */
+@media (max-width: 768px) {
+  html, body, #root {
+    overflow-x: hidden;
+  }
+}
+
+/* Requirement 3.6: 16px min font-size on form elements (prevents iOS auto-zoom) */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Requirement 3.5: 44x44px minimum touch targets on mobile */
+@media (max-width: 768px) {
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"],
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

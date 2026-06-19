@@ -78,3 +78,11 @@
   font-size: 10px;
   color: var(--text-muted);
 }
+
+
+/* ─── Mobile: hide right sidebar ─── */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

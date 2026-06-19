@@ -1,6 +1,6 @@
 import styles from './ProfileHeader.module.css';
 
-const TABS = ['Blog Posts', 'Forum Posts', 'Liked'];
+const TABS = ['Discussions', 'Liked'];
 
 function formatCount(n) {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';

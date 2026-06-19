@@ -30,6 +30,13 @@
   margin-bottom: 16px;
 }
 
+.spaceHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .spaceTitle {
   font-family: var(--font-serif);
   font-size: 20px;
@@ -37,10 +44,47 @@
   margin-bottom: 2px;
 }
 
+.spaceDesc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.newPostBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.newPostBtn:hover {
+  opacity: 0.85;
+}
+
 .spaceHandle {
   font-size: 11px;
   color: var(--accent);
   margin-bottom: 12px;
+}
+
+/* ── Error banner ── */
+.errorBanner {
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #c0392b;
+  background: #fdeaea;
+  border: 1px solid #f5c6cb;
+  border-radius: var(--radius-sm);
 }
 
 /* ── Tab bar ── */
@@ -89,4 +133,15 @@
   font-size: 24px;
   margin-bottom: 8px;
   opacity: 0.35;
+}
+
+/* ─── Mobile: hide space sidebar, single-column ─── */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    display: none;
+  }
 }

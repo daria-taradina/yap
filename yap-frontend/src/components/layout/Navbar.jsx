@@ -9,7 +9,6 @@ const DISCOVER_LINKS = [
   { to: '/',        label: 'Home',    icon: 'ti ti-home'      },
   { to: '/explore', label: 'Explore', icon: 'ti ti-sparkles'  },
   { to: '/forums',  label: 'Forums',  icon: 'ti ti-message-2' },
-  { to: '/blogs',   label: 'Blogs',   icon: 'ti ti-notebook'  },
 ];
 
 const SPACE_COLORS = ['#C4973F', '#6B8BAD', '#7A9E7E', '#A07AB5', '#9E7A7A'];
@@ -18,7 +17,6 @@ const SPACES_VISIBLE_DEFAULT = 3;
 export default function Navbar() {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const [mySpaces, setMySpaces] = useState([]);
   const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
@@ -37,11 +35,6 @@ export default function Navbar() {
     localStorage.removeItem('yap_token');
     localStorage.removeItem('yap_user');
     navigate('/login');
-  }
-
-  function pick(type) {
-    setExpanded(false);
-    navigate(`/create-post/${type}`);
   }
 
   return (
@@ -96,23 +89,11 @@ export default function Navbar() {
       </div>
 
       <div className={styles.writeArea}>
-        {expanded && (
-          <div className={styles.writeOptions}>
-            <button className={styles.writeOption} onClick={() => pick('blog')}>
-              <i className="ti ti-notebook" aria-hidden="true" />
-              Blog Post
-            </button>
-            <button className={styles.writeOption} onClick={() => pick('discussion')}>
-              <i className="ti ti-messages" aria-hidden="true" />
-              Discussion
-            </button>
-          </div>
-        )}
         <button
-          className={`${styles.writeBtn} ${expanded ? styles.writeBtnActive : ''}`}
-          onClick={() => setExpanded((v) => !v)}
+          className={styles.writeBtn}
+          onClick={() => navigate('/create-post/discussion')}
         >
-          {expanded ? '✕ Cancel' : '+ Write'}
+          + Write
         </button>
       </div>
 

@@ -20,3 +20,65 @@
 .sectionLabel:first-child {
   margin-top: 0;
 }
+
+/* Tag filter pill */
+.tagPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-bg, #e8e0ff);
+  color: var(--accent, #7c3aed);
+  border-radius: 20px;
+  padding: 4px 10px 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.tagPillLabel {
+  white-space: nowrap;
+}
+
+.tagPillClear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px;
+  border-radius: 50%;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.tagPillClear:hover,
+.tagPillClear:focus-visible {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Empty section */
+.emptySection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.emptyIcon {
+  font-size: 24px;
+  opacity: 0.5;
+}
+
+.state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}

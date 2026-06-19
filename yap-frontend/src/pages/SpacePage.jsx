@@ -14,8 +14,10 @@ export default function SpacePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [joining, setJoining] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
+  const isAuthenticated = !!localStorage.getItem('yap_token');
 
   useEffect(() => {
     setLoading(true);
@@ -33,6 +35,31 @@ export default function SpacePage() {
       .catch(() => setError('Space not found'))
       .finally(() => setLoading(false));
   }, [spaceName]);
+
+  function handleNewDiscussion() {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    navigate(`/create-post/discussion?space=${space.name}`);
+  }
+
+  async function handleDeletePost(postId) {
+    setDeleteError('');
+    // Optimistic removal
+    const previousPosts = [...posts];
+    setPosts((prev) => prev.filter((p) => p.postId !== postId));
+    try {
+      const res = await api.deletePost(postId);
+      if (!res.ok) {
+        throw new Error('Failed to delete post');
+      }
+    } catch {
+      // Rollback on failure
+      setPosts(previousPosts);
+      setDeleteError('Could not delete post. Please try again.');
+    }
+  }
 
   async function handleJoin() {
     if (!space) return;
@@ -79,19 +106,20 @@ export default function SpacePage() {
     <div className={styles.layout}>
       <div className={styles.feed}>
         <div className={styles.spaceHeader}>
-          <div>
+          <div className={styles.spaceHeaderRow}>
             <h1 className={styles.spaceTitle}>w/{space.name}</h1>
-            <p className={styles.spaceDesc}>{space.description}</p>
+            <button
+              className={styles.newPostBtn}
+              onClick={handleNewDiscussion}
+            >
+              <i className="ti ti-plus" /> New Discussion
+            </button>
           </div>
+          <p className={styles.spaceDesc}>{space.description}</p>
         </div>
 
-        {space.member && (
-          <button
-            className={styles.newPostBtn}
-            onClick={() => navigate(`/create-post/discussion?space=${space.name}`)}
-          >
-            <i className="ti ti-plus" /> New Discussion
-          </button>
+        {deleteError && (
+          <div className={styles.errorBanner}>{deleteError}</div>
         )}
 
         {posts.length === 0 ? (
@@ -100,7 +128,13 @@ export default function SpacePage() {
             <p>No posts yet. Be the first to start a conversation.</p>
           </div>
         ) : (
-          posts.map((post) => <ForumCard key={post.postId} post={post} />)
+          posts.map((post) => (
+            <ForumCard
+              key={post.postId}
+              post={post}
+              onDelete={handleDeletePost}
+            />
+          ))
         )}
       </div>
 

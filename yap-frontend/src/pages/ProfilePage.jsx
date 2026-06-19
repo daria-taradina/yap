@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ForumCard from '../components/feed/ForumCard';
-import FeaturedCard from '../components/feed/FeaturedCard';
 import { api } from '../api';
 import styles from './ProfilePage.module.css';
 
@@ -11,9 +10,8 @@ export default function ProfilePage() {
   const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
   const isOwnProfile = currentUser.username === username;
 
-  const [activeTab, setActiveTab] = useState('Blog Posts');
+  const [activeTab, setActiveTab] = useState('Discussions');
   const [profile, setProfile] = useState(null);
-  const [blogPosts, setBlogPosts] = useState([]);
   const [forumPosts, setForumPosts] = useState([]);
   const [liked, setLiked] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +22,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef(null);
-  const bannerInputRef = useRef(null);
 
   useEffect(() => {
     setLoading(true);
@@ -33,12 +30,10 @@ export default function ProfilePage() {
       .then(async (profileData) => {
         setProfile(profileData);
         setBioInput(profileData.bio || '');
-        const [blogRes, forumRes, likedRes] = await Promise.all([
-          api.getUserBlogPosts(profileData.userId).then(r => r.json()),
+        const [forumRes, likedRes] = await Promise.all([
           api.getUserPosts(profileData.userId).then(r => r.json()),
           api.getUserLiked(profileData.userId).then(r => r.json()),
         ]);
-        setBlogPosts(Array.isArray(blogRes) ? blogRes : []);
         setForumPosts(Array.isArray(forumRes) ? forumRes : []);
         setLiked(Array.isArray(likedRes) ? likedRes : []);
       })
@@ -91,10 +86,7 @@ export default function ProfilePage() {
     </div>
   );
 
-  const currentPosts =
-    activeTab === 'Blog Posts'  ? blogPosts  :
-    activeTab === 'Forum Posts' ? forumPosts :
-    liked;
+  const currentPosts = activeTab === 'Discussions' ? forumPosts : liked;
 
   return (
     <div className={styles.page}>
@@ -127,9 +119,7 @@ export default function ProfilePage() {
       {currentPosts.length === 0
         ? <div className={styles.emptyState}><div className={styles.emptyIcon}>✦</div><p>Nothing here yet</p></div>
         : currentPosts.map(post =>
-            activeTab === 'Blog Posts'
-              ? <FeaturedCard key={post.postId} post={post} />
-              : <ForumCard key={post.postId} post={post} />
+            <ForumCard key={post.postId} post={post} />
           )
       }
     </div>
