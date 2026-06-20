@@ -44,3 +44,5 @@ yap-backend/src/main/resources/application-local.properties
 
 # OS
 Thumbs.db
+
+yap-dev
