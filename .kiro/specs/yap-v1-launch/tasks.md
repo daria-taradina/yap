@@ -158,7 +158,7 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - Verify Post → PostSummary mapper populates `authorAvatarUrl` from the User entity's avatarUrl field
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7_
 
-  - [ ]* 8.4 Write property tests for feed algorithm
+  - [x] 8.4 Write property tests for feed algorithm
     - **Property 14: Feed excludes removed/deleted/flagged posts**
     - **Property 15: Feed time-decay halves score every 24 hours**
     - **Property 16: Feed diversity — max 2 consecutive posts from same space**
