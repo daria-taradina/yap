@@ -2,7 +2,9 @@
 
 ## Overview
 
-This plan implements the 18 requirements across three phases for Yap's V1 launch. The backend is Java Spring Boot 4.x with PostgreSQL on Render; the frontend is React + Vite on Vercel. All services stay within the $0 budget using free tiers. Implementation proceeds phase-by-phase: Phase 1 (pre-launch blockers), Phase 2 (production-ready feel), Phase 3 (growth & retention).
+This plan implements the 18 requirements across three phases for Yap's V1 launch. The backend is Java Spring Boot 4.x on Render; the database is PostgreSQL on Neon; the frontend is React + Vite on Vercel. Additional services: Resend (email), Giphy (GIFs), Cloudinary (avatar uploads). All services stay within the $0 budget using free tiers. Implementation proceeds phase-by-phase: Phase 1 (pre-launch blockers), Phase 2 (production-ready feel), Phase 3 (growth & retention).
+
+Key design decisions: mobile 3-item bottom nav (Home | Discover | Profile), combined Discover page at `/discover` (trending + hot + popular spaces + search), post flair replaces tag UI, feed algorithm with affinity scoring + diversity + discovery injection, expanded rate limiting (single configurable filter), reports + mod queue together in Phase 2, bookmarks in Phase 2, no member gate for posting, GIF picker in posts AND comments, PWA install nudge, desktop search in topbar → /discover?q=, profile at /@:username.
 
 ## Tasks
 
@@ -50,7 +52,7 @@ This plan implements the 18 requirements across three phases for Yap's V1 launch
 - [x] 3. Phase 1 — Frontend: Clickable navigation links on ForumCard
   - [x] 3.1 Make space names, usernames, and tags clickable links on ForumCard
     - `w/spaceName` → `<Link to={/w/${spaceName}}>` with `stopPropagation()`
-    - `@username` → `<Link to={/users/${username}}>` with `stopPropagation()`
+    - `@username` → `<Link to={/@${username}}>` with `stopPropagation()`
     - Tags → `<Link to={/?tag=${tagName}}>` with `stopPropagation()`
     - Style links with distinct color and hover underline/pointer
     - Ensure keyboard-focusable and Enter-activatable (native anchor behavior)
@@ -77,7 +79,7 @@ This plan implements the 18 requirements across three phases for Yap's V1 launch
 - [x] 5. Phase 1 — Frontend: Mobile-responsive layout and PWA
   - [x] 5.1 Implement mobile-responsive CSS and BottomNav component
     - Add viewport meta tag `width=device-width, initial-scale=1` (verify in index.html)
-    - Create `<BottomNav>` component with Home, Search, Create, Profile icons
+    - Create `<BottomNav>` component with Home, Discover, Profile icons
     - Add media queries at `max-width: 768px`: hide sidebars, show BottomNav, hide desktop nav
     - Set `min-height: 44px; min-width: 44px` on interactive elements for mobile
     - Set `font-size: 16px` minimum on inputs/textareas/selects
@@ -86,8 +88,8 @@ This plan implements the 18 requirements across three phases for Yap's V1 launch
 
   - [x] 5.2 Configure vite-plugin-pwa and add offline fallback
     - Install `vite-plugin-pwa`
-    - Configure manifest in `vite.config.js` (name: "Yap", start_url: "/", display: "standalone", theme_color, icons 192/512)
-    - Add iOS meta tags in `index.html` (apple-mobile-web-app-capable, apple-touch-icon 180px)
+    - Configure manifest in `vite.config.js` (name: "Yap", start_url: "/", display: "standalone", theme_color: "#C4973F", background_color: "#13151F", icons 192/512)
+    - Add iOS meta tags in `index.html` (apple-mobile-web-app-capable, apple-touch-icon 180px, apple-mobile-web-app-status-bar-style: black-translucent)
     - Create `offline.html` fallback page (pre-cached by service worker)
     - Configure workbox `navigateFallback` to offline.html
     - Create/add placeholder icon files (192, 512, apple-touch-icon 180)
@@ -131,196 +133,343 @@ This plan implements the 18 requirements across three phases for Yap's V1 launch
     - **Property 9: Password policy enforcement on reset**
     - **Validates: Requirements 9.3, 9.4, 10.1, 10.5, 10.6**
 
-- [ ] 8. Phase 2 — Backend: Rate limiting
-  - [ ] 8.1 Implement Bucket4j rate limiter filter for auth endpoints
+- [ ] 8. Phase 2 — Backend: Expanded rate limiting + security hardening
+  - [ ] 8.1 Implement single configurable RateLimitFilter
     - Add `bucket4j-core` dependency to `pom.xml`
-    - Create `RateLimitFilter extends OncePerRequestFilter`
-    - Apply only to `/api/auth/login` and `/api/auth/register`
-    - 5 tokens per minute per IP (ConcurrentHashMap-based bucket storage)
-    - Resolve client IP from `X-Forwarded-For` header (first value), fallback to remoteAddr
-    - On limit exceeded: HTTP 429 with `Retry-After` header and JSON error body
-    - Scheduled eviction: remove entries inactive > 10 minutes (runs every 5 min)
-    - Register filter in SecurityConfig filter chain
+    - Create `RateLimitFilter extends OncePerRequestFilter` with a configuration map:
+      - `/api/auth/login`: 5/min/IP
+      - `/api/auth/register`: 5/min/IP
+      - `POST /api/posts`: 5/min/user (requires extracting userId from JWT)
+      - `POST /api/posts/*/like`, `DELETE /api/posts/*/like`: 30/min/user
+      - `POST /api/posts/*/comments`: 10/min/user
+      - `POST /api/reports`: 3/min/user
+      - `POST /api/users/*/follow`, `DELETE /api/users/*/unfollow`: 10/min/user
+      - `GET /api/**` (unauthenticated): 120/min/IP
+    - IP resolution: X-Forwarded-For first value, fallback remoteAddr
+    - User resolution: extract from SecurityContext for user-based limits
+    - On limit exceeded: HTTP 429, Retry-After header, JSON error body
+    - Scheduled eviction every 5 min (entries inactive > 10 min)
+    - Register in SecurityConfig filter chain
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
 
-  - [ ]* 8.2 Write property tests for rate limiter
-    - **Property 10: Rate limiter blocks 6th request within one minute**
+  - [ ] 8.2 Add security hardening configuration
+    - Set `server.tomcat.max-http-form-post-size=51200` (50KB) in application.properties
+    - Set `spring.servlet.multipart.max-file-size=10MB` for avatar uploads
+    - Set `server.connection-timeout=5000` (5 seconds)
+    - Cap page size at 50 in all paginated endpoints (add validation in controller/service layer)
+    - Add isBanned check in JwtAuthFilter — if user.isBanned, return 403 on all requests
+    - Verify @Size constraints: PostCreate.title(300), PostCreate.contentText(5000), CommentCreate.contentText(2000), ReportRequest.details(500)
+    - _Requirements: 11.5 (partial), new security requirements_
+
+  - [ ]* 8.3 Write property tests for rate limiter + security
+    - **Property 10: Rate limiter blocks request exceeding configured limit per path**
     - **Property 11: Rate limiter resolves IP from X-Forwarded-For**
-    - **Property 12: Rate limiter does not affect non-auth endpoints**
+    - **Property 12: Rate limiter applies user-based limits using JWT identity**
+    - **Property 13: Banned user receives 403 on all endpoints**
     - **Validates: Requirements 11.1, 11.2, 11.3, 11.4, 11.6**
 
-- [ ] 9. Phase 2 — Frontend: Tag input pills and verification banner
-  - [ ] 9.1 Implement TagInput component with pill UX
-    - Create `<TagInput>` component with controlled input
-    - On Enter or comma keydown: trim, lowercase, validate alphanumeric-only (`/^[a-z0-9]+$/`) and length ≤ 20
-    - Duplicate check (case-insensitive) → reject silently
-    - Max 5 pills: disable input and show message at limit
-    - Each pill shows tag name + ✕ remove button
-    - Remove button removes tag and re-enables input if at limit
-    - Pass `string[]` to parent form
-    - Integrate into post creation form
-    - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
+- [ ] 9. Phase 2 — Backend: Post flair + feed algorithm + hot posts
+  - [ ] 9.1 Add flair to posts
+    - Flyway migration: add `flair` varchar(50) nullable to posts table
+    - Add `flair` field to Post entity, PostSummary DTO, PostCreate DTO
+    - No DB enum — validation happens frontend-side
+    - _Requirements: new (post flair)_
 
-  - [ ]* 9.2 Write property tests for tag input normalization and validation
-    - **Property 13: Tag input normalization and validation**
-    - **Property 14: Tag uniqueness and maximum count invariant**
-    - **Validates: Requirements 12.1, 12.2, 12.4, 12.5**
-
-  - [ ] 9.3 Add email verification reminder banner on frontend
-    - Show dismissible banner at top of every page when user's email is unverified
-    - Include "Resend verification" link that calls `POST /api/auth/resend-verification`
-    - Display success/error feedback
-    - _Requirements: 9.7_
-
-- [ ] 10. Phase 2 — Backend + Frontend: Mod queue (report-driven)
-  - [ ] 10.1 Implement mod queue backend endpoints
-    - `GET /api/mod/reports?page=0&size=20` — paginated PENDING reports ordered by createdAt DESC, include post/comment details
-    - `PATCH /api/mod/reports/{reportId}/dismiss` — set status DISMISSED
-    - `PATCH /api/mod/reports/{reportId}/remove` — set status RESOLVED, set target post `isRemoved = true`
-    - Add `@PreAuthorize("hasAnyRole('ADMIN', 'MOD')")` on controller methods
-    - Return 403 for unauthorized access
-    - _Requirements: 13.2, 13.3, 13.4, 13.5, 13.7_
-
-  - [ ] 10.2 Implement mod queue frontend page
-    - Create `/mod-queue` route, role-gate on mount (redirect to `/` if not ADMIN/MOD)
-    - Display cards: post title, content preview, author, date, report reason, reporter, space
-    - "Dismiss" button → PATCH dismiss endpoint, optimistic removal from list
-    - "Remove" button → PATCH remove endpoint, optimistic removal from list
-    - Error rollback: show error message, keep post in list
-    - _Requirements: 13.1, 13.3, 13.4, 13.5, 13.6, 13.7_
-
-  - [ ]* 10.3 Write property tests for mod queue access control and display
-    - **Property 15: Mod queue access control**
-    - **Property 16: Mod queue displays only PENDING reports ordered by date**
-    - **Validates: Requirements 13.1, 13.2, 13.7**
-
-- [ ] 11. Checkpoint — Phase 2 complete
-  - Ensure all tests pass, ask the user if questions arise.
-
-- [ ] 12. Phase 3 — Backend: Feed algorithm
-  - [ ] 12.1 Implement FeedService with time-decay scoring and discovery injection
-    - Create `FeedService` with `getPersonalizedFeed(userId, page)` and `getTrendingFeed(page)`
-    - Filter: posts from last 7 days, not deleted/removed/flagged
-    - Scoring: `baseScore = likeCount + (commentCount * 1.5)`, `decayFactor = 0.5 ^ (hoursAge / 24)`, `score = baseScore * decayFactor`
-    - Velocity boost: if 5+ likes in last 60 min → score *= 2
-    - Discovery: inject 1-2 posts from non-followed spaces (highest member_count)
-    - Unauthenticated: sort by likeCount DESC within last 7 days, no personalization
-    - Page size: 20 posts
+  - [ ] 9.2 Implement FeedService with scoring + affinity + diversity
+    - Create FeedService.java with methods:
+      - `getPersonalizedFeed(userId, page)`: posts from last 30 days (configurable via `app.feed.window-days=30` in application.properties), from joined spaces ranked by score. Affinity multiplier: spaces where user has liked/commented get 1.5× weight. Diversity: max 2 consecutive posts from same space. Discovery injection at positions 5 and 12 from highest-memberCount non-joined spaces
+      - `getPublicFeed(page)`: all posts ranked by score (logged-out users, cold-start users with <3 joined spaces get 70% public + 30% personalized)
+      - `getHotPosts()`: top 5 by score, last 48h, no pagination
+    - Scoring: `baseScore = likeCount + (commentCount × 1.5)`, `decayFactor = 0.5^(hoursAge/24)`, `score = baseScore × decayFactor`
+    - Velocity boost: 5+ likes in last 60 min → score × 2
+    - Filter: exclude isDeleted, isRemoved, isFlagged
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7_
 
-  - [ ]* 12.2 Write property tests for feed algorithm
-    - **Property 17: Feed excludes removed/deleted/flagged posts**
-    - **Property 18: Feed time-decay halves score every 24 hours**
-    - **Property 19: Feed only includes posts from last 7 days**
+  - [ ] 9.3 New feed and hot posts endpoints
+    - `GET /api/posts/feed?page=0&size=20` — personalized feed (uses JWT userId) or public feed if unauthenticated
+    - `GET /api/posts/hot` — returns List<PostSummary>, top 5
+    - `GET /api/posts/public?page=0&size=20` — all public posts ranked by score (for Discover page)
+    - Add `authorAvatarUrl` field to PostSummary DTO (for avatar display on cards)
+    - Verify Post → PostSummary mapper populates `authorAvatarUrl` from the User entity's avatarUrl field
+    - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7_
+
+  - [ ]* 9.4 Write property tests for feed algorithm
+    - **Property 14: Feed excludes removed/deleted/flagged posts**
+    - **Property 15: Feed time-decay halves score every 24 hours**
+    - **Property 16: Feed diversity — max 2 consecutive posts from same space**
+    - **Property 17: Cold start users get public feed blend**
     - **Validates: Requirements 14.1, 14.2, 14.5**
 
-- [ ] 13. Phase 3 — Backend + Frontend: Report button
-  - [ ] 13.1 Implement ReportController for user-submitted reports
-    - `POST /api/reports` with `{ postId?, commentId?, reason, details? }`
-    - Validate target exists (404 if not)
-    - Duplicate check: `reportRepository.existsByReporterAndPost(user, post)` → 409 if exists
+- [ ] 10. Phase 2 — Backend + Frontend: Report system + Mod queue
+  - [ ] 10.1 Implement ReportController
+    - `POST /api/reports` with { postId?, commentId?, reason, details? }
+    - Validate target exists (404), duplicate check per user+target (409)
     - Create Report with status PENDING
+    - Auto-flag: if post/comment now has 3+ reports from different users, set isFlagged=true
+    - Add ReportStatus.RESOLVED to enum
     - _Requirements: 15.3, 15.4, 15.6_
 
-  - [ ] 13.2 Implement report button and form on frontend
-    - Add "Report" option in post/comment overflow menu (⋯ three-dot)
-    - Only visible to authenticated users viewing content not authored by them
-    - Modal with radio buttons for each ReportReason + optional details textarea (max 500 chars)
-    - Validate reason selected before submit
-    - Show confirmation message on success
+  - [ ] 10.2 Implement mod queue backend
+    - `GET /api/mod/reports?page=0&size=20` — PENDING reports, ordered by createdAt DESC
+    - `PATCH /api/mod/reports/{reportId}/dismiss` — set DISMISSED
+    - `PATCH /api/mod/reports/{reportId}/remove` — set RESOLVED, set target isRemoved=true
+    - `PATCH /api/mod/reports/{reportId}/ban` — set RESOLVED, set target isRemoved=true, set author isBanned=true
+    - @PreAuthorize("hasAnyRole('ADMIN', 'MOD')")
+    - _Requirements: 13.2, 13.3, 13.4, 13.5, 13.7_
+
+  - [ ] 10.3 Frontend — Report button UI
+    - Add "Report" in ⋯ overflow menu on posts and comments
+    - Only visible to authenticated users on content not authored by them
+    - Modal: radio buttons for ReportReason + optional details (max 500 chars)
+    - Confirmation message on success
     - _Requirements: 15.1, 15.2, 15.5, 15.7_
 
-  - [ ]* 13.3 Write property tests for report functionality
-    - **Property 20: Report button visibility excludes own content**
-    - **Property 21: Duplicate report rejection**
-    - **Validates: Requirements 15.1, 15.4**
+  - [ ] 10.4 Frontend — Mod queue page
+    - `/mod-queue` route, role-gate (redirect to / if not ADMIN/MOD)
+    - Cards: post title, content preview, author, date, report reason, reporter, space
+    - Dismiss/Remove/Ban buttons with optimistic UI + error rollback
+    - _Requirements: 13.1, 13.3, 13.4, 13.5, 13.6, 13.7_
 
-- [ ] 14. Phase 3 — Frontend: GIF picker
-  - [ ] 14.1 Implement GifPicker component in post creation form
-    - Create `<GifPicker>` component with toggle button in post creation form
-    - Initial state: fetch Giphy trending (`/v1/gifs/trending?api_key={key}&limit=25`)
-    - Search: 500ms debounce on input → Giphy search API, display up to 25 results in grid
-    - On select: close picker, show animated preview, store `images.original.url` in form `gifUrl` field
-    - Only 1 GIF per post: selecting replaces previous
-    - Remove button clears `gifUrl` and preview
-    - API key via `VITE_GIPHY_API_KEY` env var
-    - Handle API errors with inline message
-    - Display GIF in posts with max-width 400px, preserving aspect ratio
-    - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8_
+  - [ ]* 10.5 Write property tests for report system + mod queue
+    - **Property 18: Auto-flag triggers at 3 reports from different users**
+    - **Property 19: Mod queue access control (non-mod gets redirect)**
+    - **Property 20: Duplicate report rejection**
+    - **Validates: Requirements 13.1, 13.2, 15.4**
 
-- [ ] 15. Phase 3 — Backend + Frontend: Bookmarks
-  - [ ] 15.1 Create Bookmark entity and BookmarkController
-    - Create `Bookmark` entity with unique constraint on (user_id, post_id)
-    - `POST /api/bookmarks/{postId}` — toggle: exists → delete, else → create. Returns `{bookmarked: true/false}`
-    - `GET /api/bookmarks?page=0&size=20` — user's bookmarks ordered by createdAt DESC, exclude deleted/removed/flagged posts
-    - Add `isBookmarked` field to PostSummary DTO (populated when user is authenticated)
+- [ ] 11. Phase 2 — Backend + Frontend: Bookmarks
+  - [ ] 11.1 Create Bookmark entity and BookmarkController
+    - Bookmark entity with unique constraint (user_id, post_id), Flyway migration
+    - `POST /api/bookmarks/{postId}` — toggle (exists → delete, else → create)
+    - `GET /api/bookmarks?page=0&size=20` — user's bookmarks, ordered by createdAt DESC, exclude deleted/removed/flagged
+    - Add `isBookmarked` boolean to PostSummary DTO (populated for authenticated users)
     - _Requirements: 17.1, 17.2, 17.3, 17.5_
 
-  - [ ] 15.2 Implement bookmark UI on frontend
-    - Add bookmark icon on each post (outlined = not saved, filled = saved)
-    - Click toggles with optimistic UI update
-    - Create `/saved` route: paginated list of bookmarked posts
-    - Empty state message when no saved posts
-    - Unauthenticated → redirect to `/login` on bookmark click or `/saved` navigation
+  - [ ] 11.2 Frontend — Bookmark UI
+    - Bookmark icon on ForumCard and PostDetailPage (outlined/filled toggle)
+    - Optimistic UI on click
+    - Unauthenticated → redirect to /login
+    - "Saved" tab on profile page fetches GET /api/bookmarks
+    - Empty state when no bookmarks
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6, 17.7_
 
-  - [ ]* 15.3 Write property tests for bookmarks
-    - **Property 22: Bookmark toggle round trip**
-    - **Property 23: Saved posts exclude deleted/removed/flagged content**
+  - [ ]* 11.3 Write property tests for bookmarks
+    - **Property 21: Bookmark toggle round trip**
+    - **Property 22: Saved posts exclude deleted/removed/flagged**
     - **Validates: Requirements 17.1, 17.2, 17.3**
 
-- [ ] 16. Phase 3 — Backend + Frontend: Search
-  - [ ] 16.1 Implement SearchController with ILIKE queries
+- [ ] 12. Phase 2 — Frontend: Navigation restructuring + Discover page
+  - [ ] 12.1 Update routes and navigation
+    - Rename ExplorePage.jsx → DiscoverPage.jsx, route `/explore` → `/discover`
+    - Delete ForumsPage.jsx, SearchPage.jsx
+    - Add redirects: /forums → /discover, /search → /discover, /explore → /discover
+    - Update profile route: add `/@:username` route pointing to ProfilePage
+    - Add redirects: /users/:username → /@:username, /blog/:username → /@:username
+    - Remove RequireAuth wrapper from main layout (public read access) — protect only write routes at component level
+    - Update all internal navigation links (ForumCard @username → /@username, etc.)
+    - _Requirements: 1.1, 5.2, 7.5_
+
+  - [ ] 12.2 Rewrite Discover page (`/discover`)
+    - Search bar at top: on query, show tabbed results (Posts | Spaces | Users) via GET /api/search?q=&type=
+    - Default state (no query):
+      - Trending Topics section: horizontal scrollable tag pills from GET /api/trending-tags. Clicking a tag fills search with #tagName and shows filtered posts
+      - Hot Discussions section: top 5 posts from GET /api/posts/hot, each showing title (2 lines), space name, like/comment counts
+      - Popular Spaces section: grid of space cards from GET /api/spaces (sorted by member count)
+    - URL supports `?q=` param (for desktop topbar search redirect)
+    - _Requirements: 18.1, 18.5, 18.6, 18.7, 6.1, 6.2, 6.3, 6.4_
+
+  - [ ] 12.3 Rewrite BottomNav — 3 items
+    - Home (/) | Discover (/discover) | Profile (/@username or /login)
+    - Active state highlighted in gold (var(--accent))
+    - Minimum 44x44px touch targets
+    - _Requirements: 3.3, 3.5_
+
+  - [ ] 12.4 Update mobile topbar
+    - Left: [+] create button (round gold, navigates to /create-post/discussion)
+    - Center: Yap logo
+    - Right: 🔔 notification bell with unread badge (navigates to /inbox on mobile)
+    - Remove search icon from mobile topbar
+    - _Requirements: 3.2, 3.4_
+
+  - [ ] 12.5 Update desktop left sidebar (Navbar.jsx)
+    - DISCOVER_LINKS: Home (/) and Discover (/discover) only — remove Forums/Explore
+    - Rename "+ Write" button to "+ New Discussion"
+    - Keep: My Spaces list, Create Space button
+    - _Requirements: 7.1, 7.3_
+
+  - [ ] 12.6 Update desktop right sidebar
+    - Trending Topics: horizontal scrollable pills (clicking navigates to /discover?q=%23tagName)
+    - Hot Discussions: top 3 posts (title truncated, space name, engagement counts)
+    - Clicking post → /post/:postId, clicking space → /w/:spaceName
+    - _Requirements: 6.1 (partial)_
+
+  - [ ] 12.7 Update desktop topbar
+    - Add persistent search input (compact, right side)
+    - On Enter: navigate to /discover?q={query}
+    - Keep: notifications bell dropdown, user avatar menu
+    - Fix user menu: "View profile" → navigate to /@username (not /blog/username)
+    - _Requirements: 18.1_
+
+- [ ] 13. Phase 2 — Frontend: Profile page update
+  - [ ] 13.1 Update ProfilePage
+    - Route: /@:username (strip @ in component to get username for API call)
+    - Publicly viewable (no auth required to view)
+    - Layout: large avatar, display name, @username, bio, stats row (posts · followers · following)
+    - Edit Profile button (owner only, inline edit mode)
+    - Gear icon (owner only) → settings (placeholder for now)
+    - Remove banner image div
+    - Three tabs: Posts | Liked | Saved
+    - Saved tab fetches GET /api/bookmarks (only visible content for owner)
+    - _Requirements: 7.6, 17.3, 17.4_
+
+- [ ] 14. Phase 2 — Frontend: Post flair UI + avatar display
+  - [ ] 14.1 Flair selector in CreateDiscussionPage
+    - Replace tag input with flair picker: horizontal row of pill buttons (DISCUSSION, SUPPORT, RANT, RESOURCE, QUESTION, SENSITIVE)
+    - One selectable at a time, optional (can post without flair)
+    - Color coding: Discussion=gold, Support=teal(#1D9E75), Rant=red(#C0392B), Resource=blue(#2E86C1), Question=purple(#7D3C98), Sensitive=orange(#D35400)
+    - Remove tag input from create form
+    - _Requirements: new (post flair)_
+
+  - [ ] 14.2 Show flair on ForumCard + PostDetailPage
+    - Colored pill with flair name (if post has flair set)
+    - SENSITIVE flair shows small warning icon
+    - Remove #tag pill rendering everywhere
+    - _Requirements: new (post flair)_
+
+  - [ ] 14.3 Show author avatars
+    - ForumCard: 24px avatar circle next to @username
+    - CommentItem: 24px avatar next to @username
+    - Use Avatar component with authorAvatarUrl from PostSummary DTO
+    - Avatar component falls back to generated initials (deterministic color + initials from username) when no URL is set
+    - _Requirements: new (avatar display)_
+
+- [ ] 15. Phase 2 — Frontend: Notifications/Inbox page
+  - [ ] 15.1 Create InboxPage (/inbox)
+    - Fetch GET /api/notifications
+    - Display: avatar, message text, timestamp, link to relevant post/comment
+    - Mark all read on page open via POST /api/notifications/mark-all-read
+    - Empty state: "You're all caught up ✓"
+    - Pagination: load more button
+    - _Requirements: new (inbox page)_
+
+  - [ ] 15.2 Bell icon behavior
+    - Desktop: clicking opens dropdown panel (max 10 items, "View all" → /inbox)
+    - Mobile: bell navigates directly to /inbox
+    - Unread count badge (red dot or number)
+    - _Requirements: new (notifications)_
+
+- [ ] 16. Phase 2 — Frontend: Email verification banner + space selector on create
+  - [ ] 16.1 Verification reminder banner
+    - Dismissible banner at top when user's email is unverified
+    - "Resend verification" link calls POST /api/auth/resend-verification
+    - Success/error feedback
+    - _Requirements: 9.7_
+
+  - [ ] 16.2 Space selector on create discussion
+    - If ?space= query param present: pre-select that space, show space guidelines
+    - Otherwise: show dropdown of ALL spaces (with search/filter)
+    - Fetch space guidelines from community.rules field, show below title (desktop: visible, mobile: collapsed toggle)
+    - _Requirements: new (space selector)_
+
+- [ ] 17. Phase 2 — Frontend: PWA install nudge
+  - [ ] 17.1 Implement install prompt
+    - Detect installability via `beforeinstallprompt` event
+    - Show dismissible banner once per session to logged-in mobile users who haven't installed
+    - For iOS: detect Safari and show manual instructions ("Share → Add to Home Screen")
+    - Store dismissal in localStorage
+    - Fix PWA colors: theme_color #C4973F, background_color #13151F, apple-mobile-web-app-status-bar-style: black-translucent
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
+
+- [ ] 18. Checkpoint — Phase 2 complete
+  - Ensure all tests pass, verify: email verification flow, password reset, rate limiting (429 on exceeding limits), report → auto-flag → mod queue, bookmarks toggle, Discover page sections, mobile nav, desktop search, profile at /@username, PWA install nudge.
+
+- [ ] 19. Phase 3 — Frontend: GIF picker (posts + comments)
+  - [ ] 19.1 Implement GifPicker component
+    - Toggle button in post creation form AND comment composer
+    - Initial state: Giphy trending (/v1/gifs/trending?limit=25)
+    - Search: 500ms debounce → Giphy search, 25 results in grid
+    - On select: close picker, show animated preview, store URL in gifUrl field
+    - Only 1 GIF per post/comment, selecting replaces previous
+    - Remove button clears gifUrl
+    - API key via VITE_GIPHY_API_KEY
+    - Display in posts/comments: max-width 400px, preserve aspect ratio
+    - Error handling: inline message on API failure
+    - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8_
+
+- [ ] 20. Phase 3 — Backend + Frontend: Search controller
+  - [ ] 20.1 Implement SearchController
     - `GET /api/search?q={query}&type={posts|spaces|users}&page=0&size=20`
-    - Query validation: min 2 chars, max 100 chars
+    - Validation: min 2 chars, max 100 chars
     - Posts: ILIKE on title + content_text, exclude deleted/removed/flagged, order by created_at DESC
     - Spaces: ILIKE on name + description, order by member_count DESC
-    - Users: ILIKE on username, exclude banned/inactive, order by follower_count DESC
+    - Users: ILIKE on username, exclude banned/inactive
     - _Requirements: 18.2, 18.3, 18.4_
 
-  - [ ] 16.2 Implement search UI on frontend
-    - Search input in top nav (desktop) and via Search tab in BottomNav (mobile)
-    - Results page with category tabs: Posts | Spaces | Users (default: Posts)
-    - Validate min 2 chars on client before submitting
-    - Empty state per tab when no results
-    - _Requirements: 18.1, 18.5, 18.6, 18.7_
-
-  - [ ]* 16.3 Write property tests for search
-    - **Property 24: Search results match query substring (case-insensitive)**
-    - **Property 25: Search excludes banned/inactive users and removed/deleted posts**
+  - [ ]* 20.2 Write property tests for search
+    - **Property 23: Search results match query (case-insensitive)**
+    - **Property 24: Search excludes banned/removed content**
     - **Validates: Requirements 18.2, 18.3, 18.4**
 
-- [ ] 17. Final checkpoint — Ensure all tests pass
-  - Ensure all tests pass, ask the user if questions arise.
+- [ ] 21. Phase 3 — Deployment preparation
+  - [ ] 21.1 Backend (Render)
+    - Verify env vars in Render dashboard: DATABASE_URL (Neon PostgreSQL connection string), JWT_SECRET (min 32 chars), FRONTEND_URL (production Vercel URL), RESEND_API_KEY, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+    - Remove spring-boot-starter-webflux from pom.xml (if present)
+    - Confirm actuator + bucket4j-core present
+    - Set FRONTEND_URL to production Vercel URL
+    - _Requirements: 4.3, 4.4_
+
+  - [ ] 21.2 Frontend (Vercel)
+    - Set env vars: VITE_API_URL, VITE_CLOUDINARY_CLOUD_NAME, VITE_GIPHY_API_KEY
+    - Confirm PWA icons exist (192, 512, apple-touch-icon 180)
+    - _Requirements: 8.1, 8.6_
+
+  - [ ] 21.3 Database + Flyway
+    - Verify all migrations run cleanly: flair column, bookmarks table, passwordChangedAt, email verification fields, reset token fields
+    - Seed 3 spaces with starter posts
+    - _Requirements: new (deployment)_
+
+  - [ ] 21.4 External services
+    - Configure cron-job.org: GET /actuator/health every 14 min, 30s timeout, 1 retry
+    - _Requirements: 4.1, 4.2_
+
+- [ ] 22. Final checkpoint — all tests pass, pre-launch checklist
+  - Test flows: register → verify email, password reset, report → mod queue, rate limiting (429 on 6th attempt), public browsing without auth, PWA install on iOS/Android, mobile layout at 375px
+  - Verify all routes resolve correctly, redirects work, no broken links
+  - Confirm Discover page loads all sections, search works end-to-end
+  - Verify flair display, bookmark toggle, avatar rendering
 
 ## Notes
 
-- Tasks marked with `*` are optional and can be skipped for faster MVP
+- Tasks marked with `*` are optional property tests and can be skipped for faster MVP
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation after each phase
-- Property tests validate universal correctness properties from the design doc (jqwik for Java backend, fast-check for frontend)
+- Property tests validate universal correctness properties (jqwik for Java backend, fast-check for frontend)
 - The keep-alive cron job (Requirement 4.1, 4.2) is configured externally on cron-job.org — no code task needed beyond exposing the health endpoint (task 1.2)
 - Backend retains `PostType.BLOG` enum and schema (Requirement 7.4) — no backend changes needed for blog removal
 - Icon asset creation (192px, 512px, 180px apple-touch-icon) may require design input from the user
+- Post flair replaces tag UI in the frontend — tags remain in DB but are hidden from user-facing views
+- No member gate for posting in v1 — anyone can post in any space
+- Route changes: /explore → /discover, /forums → removed, /search → removed, /users/:username → /@:username, /blog/:username → /@:username
+- GIF picker uses Giphy API (free tier) with VITE_GIPHY_API_KEY env var
+- Feed algorithm uses 30-day window (configurable), not 7-day as in original spec — decided during design phase
+- Cold start behavior: users with <3 joined spaces get 70% trending + 30% personalized blend
 
 ## Task Dependency Graph
 
 ```json
 {
   "waves": [
-    { "id": 0, "tasks": ["1.1", "1.2", "2.1"] },
-    { "id": 1, "tasks": ["1.3", "2.2", "3.1", "5.1"] },
-    { "id": 2, "tasks": ["2.3", "3.2", "4.1", "5.2"] },
-    { "id": 3, "tasks": ["4.2", "7.1", "8.1"] },
-    { "id": 4, "tasks": ["7.2", "7.3", "8.2", "9.1"] },
-    { "id": 5, "tasks": ["7.4", "9.2", "9.3", "10.1"] },
-    { "id": 6, "tasks": ["7.5", "10.2"] },
-    { "id": 7, "tasks": ["10.3", "12.1"] },
-    { "id": 8, "tasks": ["12.2", "13.1"] },
-    { "id": 9, "tasks": ["13.2", "14.1", "15.1"] },
-    { "id": 10, "tasks": ["13.3", "15.2", "16.1"] },
-    { "id": 11, "tasks": ["15.3", "16.2"] },
-    { "id": 12, "tasks": ["16.3"] }
+    { "id": 0, "tasks": ["7.1", "8.1"] },
+    { "id": 1, "tasks": ["7.2", "7.3", "8.2", "9.1"] },
+    { "id": 2, "tasks": ["7.4", "9.2", "9.3"] },
+    { "id": 3, "tasks": ["7.5*", "10.1", "11.1"] },
+    { "id": 4, "tasks": ["10.2", "10.3", "11.2", "12.1"] },
+    { "id": 5, "tasks": ["10.4", "10.5*", "11.3*", "12.2", "12.3"] },
+    { "id": 6, "tasks": ["12.4", "12.5", "12.6", "12.7", "13.1"] },
+    { "id": 7, "tasks": ["14.1", "14.2", "14.3", "15.1", "15.2"] },
+    { "id": 8, "tasks": ["16.1", "16.2", "17.1"] },
+    { "id": 9, "tasks": ["19.1", "20.1"] },
+    { "id": 10, "tasks": ["20.2*", "21.1", "21.2", "21.3", "21.4"] },
+    { "id": 11, "tasks": ["22"] }
   ]
 }
 ```
