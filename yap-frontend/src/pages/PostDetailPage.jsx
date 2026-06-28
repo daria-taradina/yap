@@ -1,7 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import Avatar from '../components/common/Avatar';
+import ReportModal from '../components/common/ReportModal';
 import styles from './PostDetailPage.module.css';
+
+const FLAIR_COLORS = {
+  DISCUSSION: '#C4973F',
+  SUPPORT: '#1D9E75',
+  RANT: '#C0392B',
+  RESOURCE: '#2E86C1',
+  QUESTION: '#7D3C98',
+  SENSITIVE: '#D35400',
+};
 
 export default function PostDetailPage() {
   const { postId } = useParams();
@@ -16,6 +27,14 @@ export default function PostDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [showPostOverflow, setShowPostOverflow] = useState(false);
+  const [showPostReport, setShowPostReport] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const postOverflowRef = useRef(null);
+
+  const token = localStorage.getItem('yap_token');
+  const currentUser = token ? JSON.parse(localStorage.getItem('yap_user') || '{}') : null;
 
   useEffect(() => {
     Promise.all([
@@ -25,10 +44,23 @@ export default function PostDetailPage() {
       setPost(postData);
       setLiked(postData.likedByCurrentUser);
       setLikeCount(postData.likeCount);
+      setBookmarked(!!postData.bookmarked);
       setComments(Array.isArray(commentsData) ? commentsData : []);
     }).catch(() => setPost(null))
       .finally(() => setLoading(false));
   }, [postId]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (postOverflowRef.current && !postOverflowRef.current.contains(e.target)) {
+        setShowPostOverflow(false);
+      }
+    }
+    if (showPostOverflow) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPostOverflow]);
 
   async function handleLike() {
     try {
@@ -56,6 +88,40 @@ export default function PostDetailPage() {
     } catch {
       setDeleteError('Could not delete post. Please try again.');
       setShowDeleteConfirm(false);
+    }
+  }
+
+  function handleShareClick() {
+    const url = `${window.location.origin}/post/${postId}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        setShowCopied(true);
+        setTimeout(() => setShowCopied(false), 1500);
+      });
+    } else {
+      const input = document.createElement('input');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 1500);
+    }
+  }
+
+  async function handleBookmark() {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    setBookmarked(prev => !prev);
+    try {
+      await api.toggleBookmark(postId);
+    } catch {
+      setBookmarked(prev => !prev);
     }
   }
 
@@ -93,10 +159,14 @@ export default function PostDetailPage() {
         <h1 className={styles.title}>{post.title}</h1>
         <p className={styles.body}>{post.contentText}</p>
 
-        {post.tags?.length > 0 && (
-          <div className={styles.tags}>
-            {post.tags.map(tag => <span key={tag} className={styles.tag}>#{tag}</span>)}
-          </div>
+        {post.flair && (
+          <span
+            className={styles.flair}
+            style={{ backgroundColor: FLAIR_COLORS[post.flair] || '#888' }}
+          >
+            {post.flair === 'SENSITIVE' && <span aria-label="Warning">⚠️</span>}
+            {post.flair}
+          </span>
         )}
 
         {deleteError && (
@@ -110,6 +180,27 @@ export default function PostDetailPage() {
           <button className={styles.actionBtn}>
             <i className="ti ti-message-circle" /> {comments.length}
           </button>
+          <span className={styles.shareBtnWrapper}>
+            <button
+              className={styles.actionBtn}
+              onClick={handleShareClick}
+              aria-label="Copy link to post"
+              title="Copy link"
+            >
+              <i className="ti ti-link" />
+            </button>
+            {showCopied && (
+              <span className={styles.copiedTooltip}>Link copied!</span>
+            )}
+          </span>
+          <button
+            className={`${styles.actionBtn} ${bookmarked ? styles.bookmarkActive : ''}`}
+            onClick={handleBookmark}
+            aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark post'}
+            title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
+          >
+            <i className={bookmarked ? 'ti ti-bookmark-filled' : 'ti ti-bookmark'} />
+          </button>
           {post.canDelete && (
             <button
               className={`${styles.actionBtn} ${styles.deleteBtn}`}
@@ -118,6 +209,27 @@ export default function PostDetailPage() {
             >
               <i className="ti ti-trash" /> Delete
             </button>
+          )}
+          {currentUser && post.authorUsername !== currentUser.username && (
+            <div className={styles.overflowWrapper} ref={postOverflowRef}>
+              <button
+                className={styles.overflowBtn}
+                onClick={() => setShowPostOverflow(v => !v)}
+                aria-label="More options"
+              >
+                <i className="ti ti-dots" />
+              </button>
+              {showPostOverflow && (
+                <div className={styles.overflowMenu}>
+                  <button
+                    className={styles.overflowItem}
+                    onClick={() => { setShowPostOverflow(false); setShowPostReport(true); }}
+                  >
+                    <i className="ti ti-flag" /> Report
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -130,6 +242,12 @@ export default function PostDetailPage() {
             </div>
           </div>
         )}
+
+        <ReportModal
+          isOpen={showPostReport}
+          onClose={() => setShowPostReport(false)}
+          postId={parseInt(postId)}
+        />
       </div>
 
       <div className={styles.commentsSection}>
@@ -169,6 +287,25 @@ function CommentItem({ comment, postId }) {
   const [showReply, setShowReply] = useState(false);
   const [replies, setReplies] = useState(comment.replies || []);
   const [submitting, setSubmitting] = useState(false);
+  const [showOverflow, setShowOverflow] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const overflowRef = useRef(null);
+
+  const token = localStorage.getItem('yap_token');
+  const currentUser = token ? JSON.parse(localStorage.getItem('yap_user') || '{}') : null;
+  const canReport = currentUser && comment.authorUsername !== currentUser.username;
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (overflowRef.current && !overflowRef.current.contains(e.target)) {
+        setShowOverflow(false);
+      }
+    }
+    if (showOverflow) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showOverflow]);
 
   async function handleLike() {
     try {
@@ -203,6 +340,7 @@ function CommentItem({ comment, postId }) {
   return (
     <div className={styles.comment}>
       <div className={styles.commentMeta}>
+        <Avatar src={comment.authorAvatarUrl} name={comment.authorUsername} size="sm" />
         <span className={styles.commentAuthor}>@{comment.authorUsername}</span>
         {comment.createdAt && (
           <span className={styles.commentTime}>· {new Date(comment.createdAt).toLocaleDateString()}</span>
@@ -217,6 +355,27 @@ function CommentItem({ comment, postId }) {
         <button className={styles.replyBtn} onClick={() => setShowReply(v => !v)}>
           Reply
         </button>
+        {canReport && (
+          <div className={styles.overflowWrapper} ref={overflowRef}>
+            <button
+              className={styles.overflowBtn}
+              onClick={() => setShowOverflow(v => !v)}
+              aria-label="More options"
+            >
+              <i className="ti ti-dots" />
+            </button>
+            {showOverflow && (
+              <div className={styles.overflowMenu}>
+                <button
+                  className={styles.overflowItem}
+                  onClick={() => { setShowOverflow(false); setShowReportModal(true); }}
+                >
+                  <i className="ti ti-flag" /> Report
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {showReply && (
@@ -243,6 +402,12 @@ function CommentItem({ comment, postId }) {
           ))}
         </div>
       )}
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        commentId={comment.commentId}
+      />
     </div>
   );
 }

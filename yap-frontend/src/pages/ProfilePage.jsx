@@ -10,10 +10,12 @@ export default function ProfilePage() {
   const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
   const isOwnProfile = currentUser.username === username;
 
-  const [activeTab, setActiveTab] = useState('Discussions');
+  const [activeTab, setActiveTab] = useState('Posts');
   const [profile, setProfile] = useState(null);
   const [forumPosts, setForumPosts] = useState([]);
   const [liked, setLiked] = useState([]);
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [savedLoading, setSavedLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // edit mode state
@@ -40,6 +42,20 @@ export default function ProfilePage() {
       .catch(() => setProfile(null))
       .finally(() => setLoading(false));
   }, [username]);
+
+  useEffect(() => {
+    if (activeTab === 'Saved' && isOwnProfile) {
+      setSavedLoading(true);
+      api.getBookmarks()
+        .then(r => r.json())
+        .then(data => {
+          const posts = data.content || data || [];
+          setSavedPosts(Array.isArray(posts) ? posts : []);
+        })
+        .catch(() => setSavedPosts([]))
+        .finally(() => setSavedLoading(false));
+    }
+  }, [activeTab, isOwnProfile]);
 
   async function handleSaveBio() {
     setSaving(true);
@@ -86,7 +102,7 @@ export default function ProfilePage() {
     </div>
   );
 
-  const currentPosts = activeTab === 'Discussions' ? forumPosts : liked;
+  const currentPosts = activeTab === 'Posts' ? forumPosts : activeTab === 'Liked' ? liked : savedPosts;
 
   return (
     <div className={styles.page}>
@@ -103,6 +119,7 @@ export default function ProfilePage() {
         uploadingAvatar={uploadingAvatar}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        postCount={forumPosts.length}
       />
 
       {/* hidden file inputs */}
@@ -116,11 +133,16 @@ export default function ProfilePage() {
         />
       )}
 
-      {currentPosts.length === 0
-        ? <div className={styles.emptyState}><div className={styles.emptyIcon}>✦</div><p>Nothing here yet</p></div>
-        : currentPosts.map(post =>
-            <ForumCard key={post.postId} post={post} />
-          )
+      {activeTab === 'Saved' && savedLoading
+        ? <div className={styles.state}>Loading...</div>
+        : currentPosts.length === 0
+          ? <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>✦</div>
+              <p>{activeTab === 'Saved' ? 'No saved posts yet' : 'Nothing here yet'}</p>
+            </div>
+          : currentPosts.map(post =>
+              <ForumCard key={post.postId} post={post} />
+            )
       }
     </div>
   );

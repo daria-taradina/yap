@@ -44,6 +44,8 @@ public class NotificationSummary {
             case USER_FOLLOWED  -> actor + " started following you";
             case POST_REMOVED   -> "Your post was removed by a moderator";
             case COMMENT_REMOVED -> "Your comment was removed by a moderator";
+            case NEW_REPORT     -> "A new report has been submitted";
+            case CONTENT_REMOVED -> "Your content was removed by a moderator";
         };
     }
 

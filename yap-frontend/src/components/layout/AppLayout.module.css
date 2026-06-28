@@ -83,15 +83,26 @@
 
 .searchInput {
   height: 30px;
-  padding: 0 10px;
+  padding: 0 12px;
   border-radius: var(--radius-full, 99px);
   border: 0.5px solid var(--border-subtle);
-  background: var(--bg-surface);
+  background: var(--bg-base);
   color: var(--text-primary);
   font-size: 13px;
-  width: 320px;
-  min-width: 320px;
+  width: 200px;
+  min-width: 160px;
+  max-width: 320px;
   outline: none;
+  transition: border-color 0.15s, width 0.2s;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.searchInput:focus {
+  border-color: var(--accent, #C4973F);
+  width: 260px;
 }
 
 .notifWrap { position: relative; }
@@ -157,8 +168,69 @@
 .notifMsg { font-size: 13px; color: var(--text-primary); }
 .notifTime { font-size: 11px; color: var(--text-muted); }
 
+.notifFooter {
+  padding: 10px 14px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent, #C4973F);
+  cursor: pointer;
+  border-top: 0.5px solid var(--border-subtle);
+  transition: background 0.12s;
+}
+.notifFooter:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 /* User menu */
 .userMenuWrap { position: relative; }
+
+/* Hamburger menu */
+.hamburgerWrap { position: relative; }
+
+.hamburgerMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: var(--bg-surface);
+  border: 0.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  z-index: 100;
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.hamburgerItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+.hamburgerItem:hover { background: rgba(255,255,255,0.05); }
+
+.modBadge {
+  margin-left: auto;
+  background: var(--accent, #C4973F);
+  color: #000;
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
 
 .avatarBtn {
   cursor: pointer;
@@ -217,6 +289,74 @@
 
 
 /* ─────────────────────────────────────────────
+   Mobile Topbar — hidden on desktop, shown ≤768px
+   ───────────────────────────────────────────── */
+.mobileTopbar {
+  display: none;
+}
+
+.createBtn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--accent, #C4973F);
+  color: #000;
+  border: none;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.createBtn:hover {
+  opacity: 0.85;
+}
+
+.notifBtn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-full);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s, color 0.12s;
+}
+.notifBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.mobileNotifBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #e05c5c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
    Mobile Responsive — ≤768px
    Hides sidebars, desktop topbar; shows BottomNav
    ───────────────────────────────────────────── */
@@ -224,6 +364,17 @@
   .shell {
     flex-direction: column;
     overflow-x: hidden;
+  }
+
+  .mobileTopbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--topbar-height);
+    flex-shrink: 0;
+    padding: 0 var(--space-3);
+    background: var(--bg-surface);
+    border-bottom: 0.5px solid var(--border-subtle);
   }
 
   .topbar {

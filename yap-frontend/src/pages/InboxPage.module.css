@@ -1,0 +1,111 @@
+/* ─────────────────────────────────────────────
+   InboxPage.module.css  —  Notifications Inbox
+   ───────────────────────────────────────────── */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  margin: 0 0 4px;
+}
+
+.header p {
+  font-size: 13px;
+  color: var(--text-muted, #888);
+  margin: 0;
+}
+
+/* Notification item */
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-surface, #1a1a2e);
+  border: 1px solid var(--border-subtle, #2a2a3e);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.item:hover {
+  background: var(--bg-base, #12121e);
+}
+
+.item.unread {
+  border-left: 3px solid var(--accent, #C4973F);
+}
+
+.avatarWrap {
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.message {
+  font-size: 14px;
+  color: var(--text-primary, #fff);
+  line-height: 1.4;
+  margin: 0 0 4px;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: var(--text-muted, #888);
+}
+
+/* Load more */
+.loadMore {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.loadMoreBtn {
+  padding: 8px 24px;
+  border-radius: 8px;
+  background: var(--border-subtle, #2a2a3e);
+  color: var(--text-primary, #fff);
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.loadMoreBtn:hover {
+  background: #3a3a4e;
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty & loading states */
+.state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted, #888);
+  font-size: 14px;
+}
+
+.emptyIcon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}

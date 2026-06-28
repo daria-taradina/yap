@@ -2,7 +2,7 @@ package com.yap.backend.security;
 
 import com.yap.backend.config.SecurityConfig;
 import com.yap.backend.entities.User;
-import com.yap.backend.repositories.UserRepository;
+import com.yap.backend.repositories.*;
 import com.yap.backend.services.*;
 import net.jqwik.api.*;
 import net.jqwik.spring.JqwikSpringSupport;
@@ -69,6 +69,27 @@ class RateLimitPropertyTest {
 
     @MockitoBean
     private UserFollowService userFollowService;
+
+    @MockitoBean
+    private BookmarkService bookmarkService;
+
+    @MockitoBean
+    private ReportService reportService;
+
+    @MockitoBean
+    private ModQueueService modQueueService;
+
+    @MockitoBean
+    private FeedService feedService;
+
+    @MockitoBean
+    private PostLikeRepository postLikeRepository;
+
+    @MockitoBean
+    private CommunityMemberRepository communityMemberRepository;
+
+    @MockitoBean
+    private BookmarkRepository bookmarkRepository;
 
     // Counter to ensure unique IPs/usernames across property runs (avoids bucket collision)
     private static final AtomicInteger COUNTER = new AtomicInteger(0);

@@ -23,6 +23,7 @@ public class PostManagementService extends BaseService {
     private final PostTagService postTagService;
     private final PostLikeRepository postLikeRepository;
     private final UserFollowRepository userFollowRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     public PostManagementService(PostRepository postRepository,
                                   CommunityRepository communityRepository,
@@ -30,7 +31,8 @@ public class PostManagementService extends BaseService {
                                   PostTagService postTagService,
                                   PostLikeRepository postLikeRepository,
                                   UserFollowRepository userFollowRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  BookmarkRepository bookmarkRepository) {
         super(userRepository);
         this.postRepository = postRepository;
         this.communityRepository = communityRepository;
@@ -38,6 +40,7 @@ public class PostManagementService extends BaseService {
         this.postTagService = postTagService;
         this.postLikeRepository = postLikeRepository;
         this.userFollowRepository = userFollowRepository;
+        this.bookmarkRepository = bookmarkRepository;
     }
 
     @Transactional
@@ -211,6 +214,7 @@ public class PostManagementService extends BaseService {
             || (post.getCommunity() != null && communityMemberRepository
                 .existsById_CommunityIdAndId_UserIdAndRole(
                     post.getCommunity().getCommunityId(), currentUserId, CommunityMemberRole.MOD));
+        boolean bookmarked = bookmarkRepository.existsById(new BookmarkId(currentUserId, post.getPostId()));
 
         return new PostSummary(
             post.getPostId(),
@@ -230,7 +234,8 @@ public class PostManagementService extends BaseService {
             liked,
             canDelete,
             post.getGifUrl(),
-            post.getFlair()
+            post.getFlair(),
+            bookmarked
         );
     }
 }

@@ -4,7 +4,9 @@ import com.yap.backend.dtos.PostSummary;
 import com.yap.backend.entities.Post;
 import com.yap.backend.entities.User;
 import com.yap.backend.enums.CommunityMemberRole;
+import com.yap.backend.keys.BookmarkId;
 import com.yap.backend.keys.PostLikeId;
+import com.yap.backend.repositories.BookmarkRepository;
 import com.yap.backend.repositories.CommunityMemberRepository;
 import com.yap.backend.repositories.PostLikeRepository;
 import com.yap.backend.repositories.UserRepository;
@@ -26,15 +28,18 @@ public class FeedController {
     private final PostLikeRepository postLikeRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final UserRepository userRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     public FeedController(FeedService feedService,
                           PostLikeRepository postLikeRepository,
                           CommunityMemberRepository communityMemberRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          BookmarkRepository bookmarkRepository) {
         this.feedService = feedService;
         this.postLikeRepository = postLikeRepository;
         this.communityMemberRepository = communityMemberRepository;
         this.userRepository = userRepository;
+        this.bookmarkRepository = bookmarkRepository;
     }
 
     @GetMapping("/feed")
@@ -114,6 +119,7 @@ public class FeedController {
 
         boolean liked = false;
         boolean canDelete = false;
+        boolean bookmarked = false;
 
         if (currentUserId != null) {
             liked = postLikeRepository.existsById(new PostLikeId(currentUserId, post.getPostId()));
@@ -121,6 +127,7 @@ public class FeedController {
                     || (post.getCommunity() != null && communityMemberRepository
                     .existsById_CommunityIdAndId_UserIdAndRole(
                             post.getCommunity().getCommunityId(), currentUserId, CommunityMemberRole.MOD));
+            bookmarked = bookmarkRepository.existsById(new BookmarkId(currentUserId, post.getPostId()));
         }
 
         return new PostSummary(
@@ -141,7 +148,8 @@ public class FeedController {
                 liked,
                 canDelete,
                 post.getGifUrl(),
-                post.getFlair()
+                post.getFlair(),
+                bookmarked
         );
     }
 

@@ -26,7 +26,7 @@
 /* ── Space + username ── */
 .topMeta {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 7px;
 }
 
@@ -71,26 +71,17 @@
   gap: 8px;
 }
 
-.tags {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.tag {
-  font-size: 10px;
-  font-weight: 500;
-  padding: 2px 7px;
+.flair {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
   border-radius: var(--radius-full);
-  background: var(--accent-dim);
-  color: var(--accent);
-  text-decoration: none;
-  cursor: pointer;
-  display: inline-block;
-}
-
-.tag:hover {
-  text-decoration: underline;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .actions {
@@ -208,4 +199,103 @@
 
 .confirmDeleteBtn:hover {
   opacity: 0.85;
+}
+
+
+/* ── Report button ── */
+.reportBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.reportBtn:hover {
+  color: #e67e22;
+  background: rgba(230, 126, 34, 0.08);
+}
+
+/* ── Share button ── */
+.shareBtnWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.shareBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.shareBtn:hover {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.copiedTooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--bg-surface);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fadeInOut 1.5s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(2px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Bookmark button ── */
+.bookmarkBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.bookmarkBtn:hover {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.bookmarkBtnActive {
+  color: var(--accent);
+}
+
+.bookmarkBtnActive:hover {
+  color: var(--accent);
+  background: var(--accent-dim);
 }

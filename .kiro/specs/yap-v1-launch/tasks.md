@@ -165,8 +165,8 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - **Property 17: Cold start users get public feed blend**
     - **Validates: Requirements 14.1, 14.2, 14.5**
 
-- [ ] 9. Phase 2 — Backend + Frontend: Report system + Mod queue
-  - [ ] 9.1 Implement ReportController
+- [x] 9. Phase 2 — Backend + Frontend: Report system + Mod queue
+  - [x] 9.1 Implement ReportController
     - `POST /api/reports` with { postId?, commentId?, reason, details? }
     - Validate target exists (404), duplicate check per user+target (409)
     - Create Report with status PENDING
@@ -174,7 +174,7 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - Add ReportStatus.RESOLVED to enum
     - _Requirements: 15.3, 15.4, 15.6_
 
-  - [ ] 9.2 Implement mod queue backend
+  - [x] 9.2 Implement mod queue backend
     - `GET /api/mod/reports?page=0&size=20` — PENDING reports, ordered by createdAt DESC
     - `PATCH /api/mod/reports/{reportId}/dismiss` — set DISMISSED
     - `PATCH /api/mod/reports/{reportId}/remove` — set RESOLVED, set target isRemoved=true
@@ -182,14 +182,14 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - @PreAuthorize("hasAnyRole('ADMIN', 'MOD')")
     - _Requirements: 13.2, 13.3, 13.4, 13.5, 13.7_
 
-  - [ ] 9.3 Frontend — Report button UI
+  - [x] 9.3 Frontend — Report button UI
     - Add "Report" in ⋯ overflow menu on posts and comments
     - Only visible to authenticated users on content not authored by them
     - Modal: radio buttons for ReportReason + optional details (max 500 chars)
     - Confirmation message on success
     - _Requirements: 15.1, 15.2, 15.5, 15.7_
 
-  - [ ] 9.4 Frontend — Mod queue page
+  - [x] 9.4 Frontend — Mod queue page
     - `/mod-queue` route, role-gate (redirect to / if not ADMIN/MOD)
     - Cards: post title, content preview, author, date, report reason, reporter, space
     - Dismiss/Remove/Ban buttons with optimistic UI + error rollback
@@ -201,15 +201,53 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - **Property 20: Duplicate report rejection**
     - **Validates: Requirements 13.1, 13.2, 15.4**
 
-- [ ] 10. Phase 2 — Backend + Frontend: Bookmarks
-  - [ ] 10.1 Create Bookmark entity and BookmarkController
+  - [x] 9.6 Report/mod UX improvements + share button
+    - [x] 9.6.1 Fix report button — replace overflow menu with direct flag icon
+      - ForumCard: replace ⋯ overflow menu with a direct flag icon (🚩) in actions row, same pattern as delete icon
+      - Use `stopPropagation()` on click, only visible to authenticated non-author users
+      - Keep overflow menu approach only on PostDetailPage and CommentItem (where there's more space)
+      - _Requirements: 15.1_
+
+    - [x] 9.6.2 Add ☰ menu button to desktop and mobile topbar
+      - Desktop topbar: add ☰ button next to the notification bell, opens a dropdown menu
+      - Mobile topbar: add ☰ button next to the bell icon, opens a slide-down/dropdown menu
+      - Menu contents: "Settings" (placeholder link, disabled or → /settings 404 page for now)
+      - For ADMIN/MOD users: "Moderation" link → `/mod-queue`, with flag/badge showing pending report count
+      - Pending count: fetch via `GET /api/mod/reports/count` (new endpoint, returns `{ count: N }`)
+      - Close menu on outside click or link click
+      - _Requirements: 13.1 (mod queue discoverability)_
+
+    - [x] 9.6.3 Backend: pending report count endpoint + mod notifications
+      - Add `GET /api/mod/reports/count` — returns `{ count: N }` where N = number of PENDING reports. Protected with @PreAuthorize ADMIN/MOD
+      - Add ReportRepository method: `long countByStatus(ReportStatus status)`
+      - On report creation (in ReportService.createReport): create a Notification for all ADMIN/MOD users with type NEW_REPORT, message "New report on: {post title or comment excerpt}", link to `/mod-queue`
+      - On mod remove/ban action (in ModQueueService): create a Notification for the content author with type CONTENT_REMOVED, message "Your {post/comment} was removed for violating community guidelines"
+      - Add `NEW_REPORT` and `CONTENT_REMOVED` to NotificationType enum
+      - _Requirements: new (mod notifications, author notification)_
+
+    - [x] 9.6.4 Backend: auto-remove at 5 distinct reporters
+      - In ReportService.createReport: after saving the report, if distinct reporter count reaches 5, set target `isRemoved=true` (in addition to the existing auto-flag at 3)
+      - Notify the author when auto-removed (same CONTENT_REMOVED notification)
+      - _Requirements: new (auto-remove threshold)_
+
+    - [x] 9.6.5 Add share/copy-link button on posts
+      - ForumCard: add a share icon (link/chain icon) in actions row
+      - On click: copy `${window.location.origin}/post/${postId}` to clipboard via navigator.clipboard.writeText()
+      - Show brief "Link copied!" toast/tooltip feedback (fade after 1.5s)
+      - PostDetailPage: same share button in post actions area
+      - Fallback for browsers without clipboard API: select+copy a hidden input
+      - `stopPropagation()` on ForumCard to prevent card navigation
+      - _Requirements: new (share/PWA)_
+
+- [x] 10. Phase 2 — Backend + Frontend: Bookmarks
+  - [x] 10.1 Create Bookmark entity and BookmarkController
     - Bookmark entity with unique constraint (user_id, post_id), Flyway migration
     - `POST /api/bookmarks/{postId}` — toggle (exists → delete, else → create)
     - `GET /api/bookmarks?page=0&size=20` — user's bookmarks, ordered by createdAt DESC, exclude deleted/removed/flagged
     - Add `isBookmarked` boolean to PostSummary DTO (populated for authenticated users)
     - _Requirements: 17.1, 17.2, 17.3, 17.5_
 
-  - [ ] 10.2 Frontend — Bookmark UI
+  - [x] 10.2 Frontend — Bookmark UI
     - Bookmark icon on ForumCard and PostDetailPage (outlined/filled toggle)
     - Optimistic UI on click
     - Unauthenticated → redirect to /login
@@ -217,13 +255,13 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - Empty state when no bookmarks
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6, 17.7_
 
-  - [ ]* 10.3 Write property tests for bookmarks
+  - [x] 10.3 Write property tests for bookmarks
     - **Property 21: Bookmark toggle round trip**
     - **Property 22: Saved posts exclude deleted/removed/flagged**
     - **Validates: Requirements 17.1, 17.2, 17.3**
 
-- [ ] 11. Phase 2 — Frontend: Navigation restructuring + Explore page
-  - [ ] 11.1 Update routes and navigation
+- [x] 11. Phase 2 — Frontend: Navigation restructuring + Explore page
+  - [x] 11.1 Update routes and navigation
     - Rename ExplorePage.jsx → ExplorePage.jsx (keep name), route `/explore` stays at `/explore`
     - Delete ForumsPage.jsx, SearchPage.jsx
     - Add redirects: /forums → /explore, /search → /explore, /discover → /explore
@@ -233,7 +271,7 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - Update all internal navigation links (ForumCard @username → /@username, etc.)
     - _Requirements: 1.1, 5.2, 7.5_
 
-  - [ ] 11.2 Rewrite Explore page (`/explore`)
+  - [x] 11.2 Rewrite Explore page (`/explore`)
     - Search bar at top: on query, show tabbed results (Posts | Spaces | Users) via GET /api/search?q=&type=
     - Default state (no query):
       - Trending Topics section: horizontal scrollable tag pills from GET /api/trending-tags. Clicking a tag fills search with #tagName and shows filtered posts
@@ -242,40 +280,40 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - URL supports `?q=` param (for desktop topbar search redirect)
     - _Requirements: 18.1, 18.5, 18.6, 18.7, 6.1, 6.2, 6.3, 6.4_
 
-  - [ ] 11.3 Rewrite BottomNav — 3 items
+  - [x] 11.3 Rewrite BottomNav — 3 items
     - Home (/) | Explore (/explore) | Profile (/@username or /login)
     - Active state highlighted in gold (var(--accent))
     - Minimum 44x44px touch targets
     - _Requirements: 3.3, 3.5_
 
-  - [ ] 11.4 Update mobile topbar
+  - [x] 11.4 Update mobile topbar
     - Left: [+] create button (round gold, navigates to /create-post/discussion)
     - Center: Yap logo
     - Right: 🔔 notification bell with unread badge (navigates to /inbox on mobile)
     - Remove search icon from mobile topbar
     - _Requirements: 3.2, 3.4_
 
-  - [ ] 11.5 Update desktop left sidebar (Navbar.jsx)
+  - [x] 11.5 Update desktop left sidebar (Navbar.jsx)
     - EXPLORE_LINKS: Home (/) and Explore (/explore) only — remove Forums
     - Rename "+ Write" button to "+ New Discussion"
     - Keep: My Spaces list, Create Space button
     - _Requirements: 7.1, 7.3_
 
-  - [ ] 11.6 Update desktop right sidebar
+  - [x] 11.6 Update desktop right sidebar
     - Trending Topics: horizontal scrollable pills (clicking navigates to /explore?q=%23tagName)
     - Hot Discussions: top 3 posts (title truncated, space name, engagement counts)
     - Clicking post → /post/:postId, clicking space → /w/:spaceName
     - _Requirements: 6.1 (partial)_
 
-  - [ ] 11.7 Update desktop topbar
+  - [x] 11.7 Update desktop topbar
     - Add persistent search input (compact, right side)
     - On Enter: navigate to /explore?q={query}
     - Keep: notifications bell dropdown, user avatar menu
     - Fix user menu: "View profile" → navigate to /@username (not /blog/username)
     - _Requirements: 18.1_
 
-- [ ] 12. Phase 2 — Frontend: Profile page update
-  - [ ] 12.1 Update ProfilePage
+- [x] 12. Phase 2 — Frontend: Profile page update
+  - [x] 12.1 Update ProfilePage
     - Route: /@:username (strip @ in component to get username for API call)
     - Publicly viewable (no auth required to view)
     - Layout: large avatar, display name, @username, bio, stats row (posts · followers · following)
@@ -286,29 +324,29 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - Saved tab fetches GET /api/bookmarks (only visible content for owner)
     - _Requirements: 7.6, 17.3, 17.4_
 
-- [ ] 13. Phase 2 — Frontend: Post flair UI + avatar display
-  - [ ] 13.1 Flair selector in CreateDiscussionPage
+- [x] 13. Phase 2 — Frontend: Post flair UI + avatar display
+  - [x] 13.1 Flair selector in CreateDiscussionPage
     - Replace tag input with flair picker: horizontal row of pill buttons (DISCUSSION, SUPPORT, RANT, RESOURCE, QUESTION, SENSITIVE)
     - One selectable at a time, optional (can post without flair)
     - Color coding: Discussion=gold, Support=teal(#1D9E75), Rant=red(#C0392B), Resource=blue(#2E86C1), Question=purple(#7D3C98), Sensitive=orange(#D35400)
     - Remove tag input from create form
     - _Requirements: new (post flair)_
 
-  - [ ] 13.2 Show flair on ForumCard + PostDetailPage
+  - [x] 13.2 Show flair on ForumCard + PostDetailPage
     - Colored pill with flair name (if post has flair set)
     - SENSITIVE flair shows small warning icon
     - Remove #tag pill rendering everywhere
     - _Requirements: new (post flair)_
 
-  - [ ] 13.3 Show author avatars
+  - [x] 13.3 Show author avatars
     - ForumCard: 24px avatar circle next to @username
     - CommentItem: 24px avatar next to @username
     - Use Avatar component with authorAvatarUrl from PostSummary DTO
     - Avatar component falls back to generated initials (deterministic color + initials from username) when no URL is set
     - _Requirements: new (avatar display)_
 
-- [ ] 14. Phase 2 — Frontend: Notifications/Inbox page
-  - [ ] 14.1 Create InboxPage (/inbox)
+- [x] 14. Phase 2 — Frontend: Notifications/Inbox page
+  - [x] 14.1 Create InboxPage (/inbox)
     - Fetch GET /api/notifications
     - Display: avatar, message text, timestamp, link to relevant post/comment
     - Mark all read on page open via POST /api/notifications/mark-all-read
@@ -316,21 +354,21 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - Pagination: load more button
     - _Requirements: new (inbox page)_
 
-  - [ ] 14.2 Bell icon behavior
+  - [x] 14.2 Bell icon behavior
     - Desktop: clicking opens dropdown panel (max 10 items, "View all" → /inbox)
     - Mobile: bell navigates directly to /inbox
     - Unread count badge (red dot or number)
     - _Requirements: new (notifications)_
 
-- [ ] 15. Phase 2 — Frontend: Space selector on create discussion
-  - [ ] 15.1 Space selector on create discussion
+- [x] 15. Phase 2 — Frontend: Space selector on create discussion
+  - [x] 15.1 Space selector on create discussion
     - If ?space= query param present: pre-select that space, show space guidelines
     - Otherwise: show dropdown of ALL spaces (with search/filter)
     - Fetch space guidelines from community.rules field, show below title (desktop: visible, mobile: collapsed toggle)
     - _Requirements: new (space selector)_
 
-- [ ] 16. Phase 2 — Frontend: PWA install nudge
-  - [ ] 16.1 Implement install prompt
+- [x] 16. Phase 2 — Frontend: PWA install nudge
+  - [x] 16.1 Implement install prompt
     - Detect installability via `beforeinstallprompt` event
     - Show dismissible banner once per session to logged-in mobile users who haven't installed
     - For iOS: detect Safari and show manual instructions ("Share → Add to Home Screen")
@@ -338,7 +376,7 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     - Fix PWA colors: theme_color #C4973F, background_color #13151F, apple-mobile-web-app-status-bar-style: black-translucent
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
 
-- [ ] 17. Checkpoint — Phase 2 complete
+- [x] 17. Checkpoint — Phase 2 complete
   - Ensure all tests pass, verify: rate limiting (429 on exceeding limits), report → auto-flag → mod queue, bookmarks toggle, Explore page sections, mobile nav, desktop search, profile at /@username, PWA install nudge.
 
 - [ ] 18. Phase 3 — Frontend: GIF picker (posts + comments)
@@ -467,6 +505,10 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
 - Emoji picker uses emoji-picker-react (desktop only — mobile uses native keyboard emoji). GIF + emoji buttons share a ComposerToolbar component
 - Feed algorithm uses 30-day window (configurable), not 7-day as in original spec — decided during design phase
 - Cold start behavior: users with <3 joined spaces get 70% trending + 30% personalized blend
+- Report UX: ForumCard uses direct flag icon (no overflow menu); PostDetailPage keeps overflow menu pattern
+- ☰ menu in topbar provides access to Settings and Moderation (for mods), replaces the need for sidebar mod link
+- Auto-remove at 5 distinct reporters supplements auto-flag at 3 — community-driven moderation
+- Share button copies post URL to clipboard for easy PWA sharing
 
 ## Task Dependency Graph
 
@@ -477,8 +519,8 @@ Key design decisions: mobile 3-item bottom nav (Home | Explore | Profile), combi
     { "id": 1, "tasks": ["7.2", "8.2", "8.3"] },
     { "id": 2, "tasks": ["7.3*", "9.1", "10.1"] },
     { "id": 3, "tasks": ["9.2", "9.3", "10.2", "11.1"] },
-    { "id": 4, "tasks": ["9.4", "9.5*", "10.3*", "11.2", "11.3"] },
-    { "id": 5, "tasks": ["11.4", "11.5", "11.6", "11.7", "12.1"] },
+    { "id": 4, "tasks": ["9.4", "9.5*", "9.6.3", "10.3*", "11.2", "11.3"] },
+    { "id": 5, "tasks": ["9.6.1", "9.6.2", "9.6.4", "9.6.5", "11.4", "11.5", "11.6", "11.7", "12.1"] },
     { "id": 6, "tasks": ["13.1", "13.2", "13.3", "14.1", "14.2"] },
     { "id": 7, "tasks": ["15.1", "16.1"] },
     { "id": 8, "tasks": ["18.1", "18.2", "19.1"] },

@@ -23,6 +23,7 @@ public class PostSummary {
     private boolean canDelete;
     private String gifUrl;
     private String flair;
+    private boolean isBookmarked;
 
     public PostSummary() {}
 
@@ -33,6 +34,18 @@ public class PostSummary {
                           LocalDateTime createdAt, List<String> tags,
                           boolean isLikedByCurrentUser, boolean canDelete, String gifUrl,
                           String flair) {
+        this(postId, authorUsername, authorId, authorAvatarUrl, communityName, communityId,
+             communityIconUrl, postType, title, contentText, likeCount, commentCount,
+             createdAt, tags, isLikedByCurrentUser, canDelete, gifUrl, flair, false);
+    }
+
+    public PostSummary(Integer postId, String authorUsername, Integer authorId,
+                          String authorAvatarUrl, String communityName, Integer communityId,
+                          String communityIconUrl, PostType postType, String title,
+                          String contentText, int likeCount, int commentCount,
+                          LocalDateTime createdAt, List<String> tags,
+                          boolean isLikedByCurrentUser, boolean canDelete, String gifUrl,
+                          String flair, boolean isBookmarked) {
         this.postId = postId;
         this.authorUsername = authorUsername;
         this.authorId = authorId;
@@ -51,6 +64,7 @@ public class PostSummary {
         this.canDelete = canDelete;
         this.gifUrl = gifUrl;
         this.flair = flair;
+        this.isBookmarked = isBookmarked;
     }
 
     public Integer getPostId() { return postId; }
@@ -71,4 +85,5 @@ public class PostSummary {
     public boolean isCanDelete() { return canDelete; }
     public String getGifUrl() { return gifUrl; }
     public String getFlair() { return flair; }
+    public boolean isBookmarked() { return isBookmarked; }
 }

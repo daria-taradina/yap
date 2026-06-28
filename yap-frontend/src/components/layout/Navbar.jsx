@@ -5,10 +5,9 @@ import { useTheme } from '../../hooks/useTheme';
 import { api } from '../../api';
 import styles from './Navbar.module.css';
 
-const DISCOVER_LINKS = [
+const EXPLORE_LINKS = [
   { to: '/',        label: 'Home',    icon: 'ti ti-home'      },
   { to: '/explore', label: 'Explore', icon: 'ti ti-sparkles'  },
-  { to: '/forums',  label: 'Forums',  icon: 'ti ti-message-2' },
 ];
 
 const SPACE_COLORS = ['#C4973F', '#6B8BAD', '#7A9E7E', '#A07AB5', '#9E7A7A'];
@@ -51,8 +50,8 @@ export default function Navbar() {
       </div>
 
       <div className={styles.navSection}>
-        <div className={styles.sectionLabel}>Discover</div>
-        {DISCOVER_LINKS.map(({ to, label, icon }) => (
+        <div className={styles.sectionLabel}>Explore</div>
+        {EXPLORE_LINKS.map(({ to, label, icon }) => (
           <NavLink
             key={to}
             to={to}
@@ -93,7 +92,7 @@ export default function Navbar() {
           className={styles.writeBtn}
           onClick={() => navigate('/create-post/discussion')}
         >
-          + Write
+          + New Discussion
         </button>
       </div>
 

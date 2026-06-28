@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.yap.backend.security.JwtAuthFilter;
 import com.yap.backend.security.JwtUtil;
 import com.yap.backend.security.UserDetailsServiceImpl;
+import com.yap.backend.repositories.*;
 import com.yap.backend.services.*;
 
 import java.util.List;
@@ -62,6 +63,30 @@ class SecurityConfigPropertyTest {
 
     @MockitoBean
     private UserFollowService userFollowService;
+
+    @MockitoBean
+    private BookmarkService bookmarkService;
+
+    @MockitoBean
+    private ReportService reportService;
+
+    @MockitoBean
+    private ModQueueService modQueueService;
+
+    @MockitoBean
+    private FeedService feedService;
+
+    @MockitoBean
+    private PostLikeRepository postLikeRepository;
+
+    @MockitoBean
+    private CommunityMemberRepository communityMemberRepository;
+
+    @MockitoBean
+    private UserRepository userRepository;
+
+    @MockitoBean
+    private BookmarkRepository bookmarkRepository;
 
     // --- Public GET endpoint path segments ---
     private static final List<String> PUBLIC_GET_PATHS = List.of(

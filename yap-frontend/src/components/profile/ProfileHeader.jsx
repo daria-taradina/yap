@@ -1,7 +1,5 @@
 import styles from './ProfileHeader.module.css';
 
-const TABS = ['Discussions', 'Liked'];
-
 function formatCount(n) {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   return String(n ?? 0);
@@ -20,28 +18,21 @@ export default function ProfileHeader({
   uploadingAvatar,
   activeTab,
   onTabChange,
+  postCount = 0,
 }) {
   const {
     username,
     bio,
-    bannerUrl,
     avatarUrl,
     followerCount = 0,
     followingCount = 0,
-    communityCount = 0,
   } = profile;
 
   const initials = username ? username.slice(0, 2).toUpperCase() : '?';
+  const tabs = isOwnProfile ? ['Posts', 'Liked', 'Saved'] : ['Posts', 'Liked'];
 
   return (
     <div className={styles.header}>
-      {/* Banner */}
-      <div className={styles.banner}>
-        {bannerUrl
-          ? <img src={bannerUrl} alt="" />
-          : <div className={styles.bannerFallback} />}
-      </div>
-
       {/* Avatar */}
       <div className={styles.avatarWrap}>
         <div
@@ -69,22 +60,33 @@ export default function ProfileHeader({
           <span className={styles.username}>@{username}</span>
         </div>
 
-        {isOwnProfile ? (
-          editMode ? (
-            <div className={styles.editActions}>
-              <button className={styles.cancelBtn} onClick={onEditToggle}>Cancel</button>
-              <button className={styles.saveBtn} onClick={onSaveBio} disabled={saving}>
-                {saving ? 'Saving...' : 'Save'}
-              </button>
-            </div>
+        <div className={styles.ownerActions}>
+          {isOwnProfile ? (
+            editMode ? (
+              <div className={styles.editActions}>
+                <button className={styles.cancelBtn} onClick={onEditToggle}>Cancel</button>
+                <button className={styles.saveBtn} onClick={onSaveBio} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            ) : (
+              <>
+                <button className={styles.editBtn} onClick={onEditToggle}>
+                  <i className="ti ti-edit" /> Edit profile
+                </button>
+                <button
+                  className={styles.gearBtn}
+                  onClick={() => alert('Settings coming soon!')}
+                  title="Settings"
+                >
+                  <i className="ti ti-settings" />
+                </button>
+              </>
+            )
           ) : (
-            <button className={styles.editBtn} onClick={onEditToggle}>
-              <i className="ti ti-edit" /> Edit profile
-            </button>
-          )
-        ) : (
-          <button className={styles.subscribeBtn}>Follow</button>
-        )}
+            <button className={styles.subscribeBtn}>Follow</button>
+          )}
+        </div>
       </div>
 
       {/* Bio */}
@@ -103,6 +105,11 @@ export default function ProfileHeader({
       {/* Stats */}
       <div className={styles.stats}>
         <div className={styles.stat}>
+          <span className={styles.statNum}>{formatCount(postCount)}</span>
+          <span className={styles.statLabel}>posts</span>
+        </div>
+        <span className={styles.dot}>·</span>
+        <div className={styles.stat}>
           <span className={styles.statNum}>{formatCount(followerCount)}</span>
           <span className={styles.statLabel}>followers</span>
         </div>
@@ -111,16 +118,11 @@ export default function ProfileHeader({
           <span className={styles.statNum}>{formatCount(followingCount)}</span>
           <span className={styles.statLabel}>following</span>
         </div>
-        <span className={styles.dot}>·</span>
-        <div className={styles.stat}>
-          <span className={styles.statNum}>{communityCount}</span>
-          <span className={styles.statLabel}>spaces</span>
-        </div>
       </div>
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.active : ''}`}

@@ -3,11 +3,13 @@ package com.yap.backend.services;
 import com.yap.backend.dtos.NotificationSummary;
 import com.yap.backend.entities.*;
 import com.yap.backend.enums.NotificationType;
+import com.yap.backend.enums.UserRole;
 import com.yap.backend.repositories.NotificationRepository;
 import com.yap.backend.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,6 +97,21 @@ public class NotificationService extends BaseService {
     public void notifyCommentRemoved(User recipient, Comment comment) {
         create(null, recipient, NotificationType.COMMENT_REMOVED,
                comment.getPost(), comment);
+    }
+
+    @Transactional
+    public void notifyNewReport(User actor, Post post, Comment comment) {
+        List<User> modsAndAdmins = new ArrayList<>();
+        modsAndAdmins.addAll(userRepository.findByRole(UserRole.ADMIN));
+        modsAndAdmins.addAll(userRepository.findByRole(UserRole.MOD));
+        for (User recipient : modsAndAdmins) {
+            create(actor, recipient, NotificationType.NEW_REPORT, post, comment);
+        }
+    }
+
+    @Transactional
+    public void notifyContentRemoved(User recipient, Post post, Comment comment) {
+        create(null, recipient, NotificationType.CONTENT_REMOVED, post, comment);
     }
 
     // ---------------------------------------------------------------

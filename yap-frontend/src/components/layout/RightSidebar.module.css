@@ -29,56 +29,106 @@
   margin-top: 0;
 }
 
-/* ── Trending tags ── */
-.trendItem {
+/* ── Empty state ── */
+.emptyState {
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  padding: 4px 0;
+}
+
+/* ── Trending pills (horizontal scrollable) ── */
+.pillsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 80px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pill:hover {
+  background: var(--accent);
+  color: var(--bg-surface);
+}
+
+/* ── Hot Discussions ── */
+.hotList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hotItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--border-subtle);
+}
+
+.hotItem:last-child {
+  border-bottom: none;
+}
+
+.hotTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.12s;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.hotTitle:hover {
+  color: var(--text-primary);
+}
+
+.hotMeta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
-  font-size: 12px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color 0.12s;
+  gap: 6px;
 }
 
-.trendItem:hover {
-  color: var(--text-primary);
-}
-
-.trendCount {
+.hotSpace {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--accent);
+  cursor: pointer;
+  transition: opacity 0.12s;
 }
 
-/* ── Suggested users ── */
-.suggestedItem {
+.hotSpace:hover {
+  opacity: 0.8;
+}
+
+.hotStats {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 0;
-  cursor: pointer;
-}
-
-.suggestedInfo {
-  display: flex;
-  flex-direction: column;
-}
-
-.suggestedName {
-  font-size: 12px;
-  color: var(--text-secondary);
-  transition: color 0.12s;
-}
-
-.suggestedItem:hover .suggestedName {
-  color: var(--text-primary);
-}
-
-.suggestedSub {
   font-size: 10px;
   color: var(--text-muted);
 }
-
 
 /* ─── Mobile: hide right sidebar ─── */
 @media (max-width: 768px) {

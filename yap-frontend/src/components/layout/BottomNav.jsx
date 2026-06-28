@@ -1,27 +1,23 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import styles from './BottomNav.module.css';
 
 export default function BottomNav() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const currentUser = JSON.parse(localStorage.getItem('yap_user') || '{}');
-
-  function handleCreateClick(e) {
-    e.preventDefault();
-    if (!currentUser.username) {
-      navigate('/login');
-    } else {
-      navigate('/create-post/discussion');
-    }
-  }
 
   function handleProfileClick(e) {
     e.preventDefault();
     if (!currentUser.username) {
       navigate('/login');
     } else {
-      navigate(`/blog/${currentUser.username}`);
+      navigate(`/@${currentUser.username}`);
     }
   }
+
+  const isProfileActive =
+    pathname === '/login' ||
+    (currentUser.username && pathname === `/@${currentUser.username}`);
 
   return (
     <nav className={styles.bottomNav} aria-label="Mobile navigation">
@@ -50,11 +46,11 @@ export default function BottomNav() {
       </NavLink>
 
       <NavLink
-        to="/search"
+        to="/explore"
         className={({ isActive }) =>
           `${styles.navItem} ${isActive ? styles.active : ''}`
         }
-        aria-label="Search"
+        aria-label="Explore"
       >
         <svg
           className={styles.icon}
@@ -69,34 +65,12 @@ export default function BottomNav() {
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <span className={styles.label}>Search</span>
+        <span className={styles.label}>Explore</span>
       </NavLink>
 
       <a
-        href="/create-post/discussion"
-        className={styles.navItem}
-        onClick={handleCreateClick}
-        aria-label="Create"
-      >
-        <svg
-          className={styles.icon}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        <span className={styles.label}>Create</span>
-      </a>
-
-      <a
         href="#"
-        className={styles.navItem}
+        className={`${styles.navItem} ${isProfileActive ? styles.active : ''}`}
         onClick={handleProfileClick}
         aria-label="Profile"
       >

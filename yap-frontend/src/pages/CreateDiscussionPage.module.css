@@ -33,23 +33,213 @@
   color: var(--accent);       /* gold — draws attention first */
 }
 
-.spaceSelect {
+/* Searchable space selector */
+.spaceSelector {
+  position: relative;
+}
+
+.spaceInputWrapper {
+  display: flex;
+  align-items: center;
   background: var(--bg-elevated);
   border: 0.5px solid var(--accent-dim-md);
   border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-  width: 100%;
-  appearance: none;
-  cursor: pointer;
+  padding: 0 12px;
+  min-height: 44px;
   transition: border-color 0.15s;
+  cursor: text;
 }
 
-.spaceSelect:focus {
+.spaceInputWrapper:focus-within {
   border-color: var(--accent);
+}
+
+.spaceSearchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
   outline: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: 10px 0;
+  min-width: 0;
+}
+
+.spaceSearchInput::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* Selected space chip */
+.selectedChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid var(--accent-dim-md);
+  border-radius: var(--radius-full);
+  padding: 4px 8px 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.chipClear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.chipClear:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Dropdown list */
+.spaceDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-elevated);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.spaceOption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.spaceOption:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.spaceOptionName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.spaceOptionMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.spaceOptionDesc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 320px;
+}
+
+.spaceNoResults {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Space guidelines */
+.guidelinesSection {
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-elevated));
+  border: 0.5px solid var(--accent-dim-md);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.guidelinesToggle {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  min-height: 44px;
+  width: 100%;
+  text-align: left;
+}
+
+.guidelinesToggle:hover {
+  opacity: 0.85;
+}
+
+.guidelinesArrow {
+  transition: transform 0.2s;
+  font-size: 10px;
+}
+
+.guidelinesArrowOpen {
+  transform: rotate(180deg);
+}
+
+.guidelinesHeader {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.guidelinesContent {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+/* Mobile: collapse guidelines behind a toggle */
+@media (max-width: 768px) {
+  .guidelinesToggle {
+    display: flex;
+  }
+
+  .guidelinesHeader {
+    display: none;
+  }
+
+  .guidelinesBody {
+    display: none;
+  }
+
+  .guidelinesBodyOpen {
+    display: block;
+    margin-top: 8px;
+  }
+
+  .spaceSearchInput {
+    font-size: 16px;
+  }
 }
 
 .field {
@@ -71,7 +261,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--text-primary);
   width: 100%;
   transition: border-color 0.15s;
@@ -85,7 +275,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--text-primary);
   width: 100%;
   min-height: 140px;
@@ -100,6 +290,39 @@
 .hint {
   font-size: 10px;
   color: var(--text-muted);
+}
+
+/* Flair picker */
+.flairPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.flairPill {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1.5px solid var(--flair-color);
+  color: var(--flair-color);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.flairPill:hover {
+  background: color-mix(in srgb, var(--flair-color) 10%, transparent);
+}
+
+.flairPillActive {
+  background: var(--flair-color);
+  color: #fff;
+}
+
+.flairPillActive:hover {
+  background: var(--flair-color);
+  opacity: 0.9;
 }
 
 .error {

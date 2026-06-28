@@ -69,6 +69,7 @@ export const api = {
   likeComment: (id) => apiFetch(`/posts/comments/${id}/like`, { method: 'POST' }),
   unlikeComment: (id) => apiFetch(`/posts/comments/${id}/like`, { method: 'DELETE' }),
   getTrendingTags: () => apiFetch('/posts/trending'),
+  getHotPosts: () => apiFetch('/posts/hot'),
   getPostsByTag: (tagName) => apiFetch(`/posts/tag/${tagName}`),
   getUserProfile: (username) => apiFetch(`/users/${username}`),
   getUserBlogPosts: (userId) => apiFetch(`/posts/profile/${userId}`),
@@ -76,13 +77,17 @@ export const api = {
   getUserLiked: (userId) => apiFetch(`/posts/liked-by/${userId}`),
 
   // Notifications
-  getNotifications: () => apiFetch('/notifications'),
+  getNotifications: (page = 0, size = 20) => apiFetch(`/notifications?page=${page}&size=${size}`),
   getUnreadCount: () => apiFetch('/notifications/unread-count'),
   markNotificationsRead: () => apiFetch('/notifications/mark-all-read', { method: 'POST' }),
 
   // Search
-  searchPosts: (q) => apiFetch(`/posts/search?q=${encodeURIComponent(q)}`),
+  searchPosts: (q, page = 0, size = 20) => apiFetch(`/posts/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`),
   searchSpaces: (q) => apiFetch(`/spaces?search=${encodeURIComponent(q)}`),
+  searchUsers: (q) => apiFetch(`/users/search?q=${encodeURIComponent(q)}`),
+
+  // Hot posts
+  getHotPosts: () => apiFetch('/posts/hot'),
   
   // Delete post
   deletePost: (postId) => apiFetch(`/posts/${postId}`, { method: 'DELETE' }),
@@ -90,4 +95,18 @@ export const api = {
   // Profile edit
   updateBio: (bio) => apiFetch('/users/me/bio', { method: 'PATCH', body: JSON.stringify({ bio }) }),
   updateAvatar: (url) => apiFetch('/users/me/avatar', { method: 'PATCH', body: JSON.stringify({ url }) }),
+
+  // Bookmarks
+  toggleBookmark: (postId) => apiFetch(`/bookmarks/${postId}`, { method: 'POST' }),
+  getBookmarks: (page = 0, size = 20) => apiFetch(`/bookmarks?page=${page}&size=${size}`),
+
+  // Reports
+  reportContent: (body) => apiFetch('/reports', { method: 'POST', body: JSON.stringify(body) }),
+
+  // Mod Queue
+  getModReportCount: () => apiFetch('/mod/reports/count'),
+  getModReports: (page = 0, size = 20) => apiFetch(`/mod/reports?page=${page}&size=${size}`),
+  dismissReport: (reportId) => apiFetch(`/mod/reports/${reportId}/dismiss`, { method: 'PATCH' }),
+  removeReport: (reportId) => apiFetch(`/mod/reports/${reportId}/remove`, { method: 'PATCH' }),
+  banReport: (reportId) => apiFetch(`/mod/reports/${reportId}/ban`, { method: 'PATCH' }),
 };

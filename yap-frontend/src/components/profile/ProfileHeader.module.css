@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    ProfileHeader.module.css
-   Banner → avatar → name → bio → stats
+   Avatar → name → bio → stats → tabs
    ───────────────────────────────────────────── */
 
 .header {
@@ -11,42 +11,15 @@
   margin-bottom: 16px;
 }
 
-/* ── Banner ── */
-.banner {
-  height: 120px;
-  background: var(--bg-elevated);
-  position: relative;
-  overflow: hidden;
-}
-
-.banner img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Fallback gradient when no banner image */
-.bannerFallback {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(196, 151, 63, 0.15) 0%,
-    rgba(196, 151, 63, 0.04) 60%,
-    transparent 100%
-  );
-}
-
-/* ── Avatar — overlaps the banner ── */
+/* ── Avatar — top of card, no banner ── */
 .avatarWrap {
-  position: relative;
-  margin: -28px 0 0 20px;
+  padding: 20px 20px 0;
   width: fit-content;
 }
 
 .avatar {
-  width: 56px;
-  height: 56px;
+  width: 84px;
+  height: 84px;
   border-radius: var(--radius-full);
   border: 2.5px solid var(--bg-surface);
   object-fit: cover;
@@ -54,7 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 500;
   color: var(--accent);
   overflow: hidden;
@@ -66,12 +39,12 @@
   object-fit: cover;
 }
 
-/* ── Subscribe button — top right of body ── */
+/* ── Body row: identity + actions ── */
 .bodyRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 10px 16px 0;
+  padding: 12px 16px 0;
   gap: 12px;
 }
 
@@ -94,15 +67,24 @@
   color: var(--text-muted);
 }
 
-/* ── Subscribe button ── */
-.subscribeBtn {
+/* ── Owner actions row ── */
+.ownerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
-  padding: 7px 16px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--accent);
-  color: var(--bg-base);
+}
+
+/* ── Subscribe / Follow button ── */
+.subscribeBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 99px);
+  border: none;
+  background: var(--accent, #C4973F);
+  color: #000;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
   transition: opacity 0.15s;
 }
 
@@ -182,6 +164,7 @@
   border-bottom-color: var(--accent);
 }
 
+/* ── Edit mode avatar ── */
 .avatarEditable { cursor: pointer; position: relative; }
 
 .avatarOverlay {
@@ -193,7 +176,7 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 18px;
+  font-size: 22px;
 }
 
 .uploading {
@@ -201,6 +184,7 @@
   color: var(--text-muted);
 }
 
+/* ── Edit profile button ── */
 .editBtn {
   display: flex;
   align-items: center;
@@ -215,6 +199,23 @@
 }
 .editBtn:hover { background: rgba(255,255,255,0.05); }
 
+/* ── Gear / settings button ── */
+.gearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full, 99px);
+  border: 0.5px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+}
+.gearBtn:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+
+/* ── Edit actions (save/cancel) ── */
 .editActions { display: flex; gap: 8px; }
 
 .cancelBtn {
@@ -239,8 +240,10 @@
 }
 .saveBtn:disabled { opacity: 0.6; }
 
+/* ── Bio textarea ── */
 .bioInput {
-  width: 100%;
+  width: calc(100% - 32px);
+  margin: 4px 16px 0;
   padding: 8px 10px;
   border-radius: var(--radius-md, 8px);
   border: 0.5px solid var(--border-subtle);
@@ -249,18 +252,6 @@
   font-size: 13px;
   resize: vertical;
   min-height: 60px;
-  margin-top: 4px;
   font-family: inherit;
 }
 .bioInput:focus { outline: none; border-color: var(--accent); }
-
-.subscribeBtn {
-  padding: 6px 14px;
-  border-radius: var(--radius-full, 99px);
-  border: none;
-  background: var(--accent, #C4973F);
-  color: #000;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
