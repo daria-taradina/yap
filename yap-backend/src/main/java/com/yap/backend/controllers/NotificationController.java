@@ -2,6 +2,7 @@ package com.yap.backend.controllers;
 
 import com.yap.backend.dtos.NotificationSummary;
 import com.yap.backend.services.NotificationService;
+import com.yap.backend.util.PaginationUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +20,18 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<NotificationSummary>> getMyNotifications() {
-        return ResponseEntity.ok(notificationService.getMyNotifications());
+    public ResponseEntity<List<NotificationSummary>> getMyNotifications(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        int clampedSize = PaginationUtil.clampSize(size);
+        int normalizedPage = PaginationUtil.normalizePage(page);
+        List<NotificationSummary> notifications = notificationService.getMyNotifications();
+        int fromIndex = normalizedPage * clampedSize;
+        if (fromIndex >= notifications.size()) {
+            return ResponseEntity.ok(List.of());
+        }
+        int toIndex = Math.min(fromIndex + clampedSize, notifications.size());
+        return ResponseEntity.ok(notifications.subList(fromIndex, toIndex));
     }
 
     @GetMapping("/unread-count")

@@ -2,6 +2,7 @@ package com.yap.backend.controllers;
 
 import com.yap.backend.dtos.*;
 import com.yap.backend.services.CommunityService;
+import com.yap.backend.util.PaginationUtil;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +25,34 @@ public class CommunityController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CommunityResponse>> getAllSpaces() {
-        return ResponseEntity.ok(communityService.getAllCommunities());
+    public ResponseEntity<List<CommunityResponse>> getAllSpaces(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        int clampedSize = PaginationUtil.clampSize(size);
+        int normalizedPage = PaginationUtil.normalizePage(page);
+        List<CommunityResponse> communities = communityService.getAllCommunities();
+        int fromIndex = normalizedPage * clampedSize;
+        if (fromIndex >= communities.size()) {
+            return ResponseEntity.ok(List.of());
+        }
+        int toIndex = Math.min(fromIndex + clampedSize, communities.size());
+        return ResponseEntity.ok(communities.subList(fromIndex, toIndex));
     }
 
     @GetMapping("/category/{category}")
     public ResponseEntity<List<CommunityResponse>> getByCategory(
-            @PathVariable String category) {
-        return ResponseEntity.ok(communityService.getCommunitiesByCategory(category));
+            @PathVariable String category,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        int clampedSize = PaginationUtil.clampSize(size);
+        int normalizedPage = PaginationUtil.normalizePage(page);
+        List<CommunityResponse> communities = communityService.getCommunitiesByCategory(category);
+        int fromIndex = normalizedPage * clampedSize;
+        if (fromIndex >= communities.size()) {
+            return ResponseEntity.ok(List.of());
+        }
+        int toIndex = Math.min(fromIndex + clampedSize, communities.size());
+        return ResponseEntity.ok(communities.subList(fromIndex, toIndex));
     }
 
     @GetMapping("/my")

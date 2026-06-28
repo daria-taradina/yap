@@ -3,6 +3,7 @@ package com.yap.backend.controllers;
 
 import com.yap.backend.dtos.UserSummary;
 import com.yap.backend.services.UserFollowService;
+import com.yap.backend.util.PaginationUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -28,12 +29,34 @@ public class UserFollowController {
     }
 
     @GetMapping("/{userId}/followers")
-    public ResponseEntity<List<UserSummary>> getFollowers(@PathVariable Integer userId) {
-        return ResponseEntity.ok(userFollowService.getFollowers(userId));
+    public ResponseEntity<List<UserSummary>> getFollowers(
+            @PathVariable Integer userId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        int clampedSize = PaginationUtil.clampSize(size);
+        int normalizedPage = PaginationUtil.normalizePage(page);
+        List<UserSummary> followers = userFollowService.getFollowers(userId);
+        int fromIndex = normalizedPage * clampedSize;
+        if (fromIndex >= followers.size()) {
+            return ResponseEntity.ok(List.of());
+        }
+        int toIndex = Math.min(fromIndex + clampedSize, followers.size());
+        return ResponseEntity.ok(followers.subList(fromIndex, toIndex));
     }
 
     @GetMapping("/{userId}/following")
-    public ResponseEntity<List<UserSummary>> getFollowing(@PathVariable Integer userId) {
-        return ResponseEntity.ok(userFollowService.getFollowing(userId));
+    public ResponseEntity<List<UserSummary>> getFollowing(
+            @PathVariable Integer userId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        int clampedSize = PaginationUtil.clampSize(size);
+        int normalizedPage = PaginationUtil.normalizePage(page);
+        List<UserSummary> following = userFollowService.getFollowing(userId);
+        int fromIndex = normalizedPage * clampedSize;
+        if (fromIndex >= following.size()) {
+            return ResponseEntity.ok(List.of());
+        }
+        int toIndex = Math.min(fromIndex + clampedSize, following.size());
+        return ResponseEntity.ok(following.subList(fromIndex, toIndex));
     }
 }

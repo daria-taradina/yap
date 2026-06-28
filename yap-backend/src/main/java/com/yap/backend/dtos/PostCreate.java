@@ -24,6 +24,9 @@ public class PostCreate {
              message = "Invalid GIF URL")
     private String gifUrl;
 
+    @Size(max = 50, message = "Flair must not exceed 50 characters")
+    private String flair;
+
     public Integer getCommunityId() { return communityId; }
     public void setCommunityId(Integer communityId) { this.communityId = communityId; }
 
@@ -41,4 +44,7 @@ public class PostCreate {
 
     public String getGifUrl() { return gifUrl; }
     public void setGifUrl(String gifUrl) { this.gifUrl = gifUrl; }
+
+    public String getFlair() { return flair; }
+    public void setFlair(String flair) { this.flair = flair; }
 }

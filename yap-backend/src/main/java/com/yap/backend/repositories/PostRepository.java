@@ -230,4 +230,85 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
         ORDER BY p.createdAt DESC
     """)
     List<Post> findAllBlogPosts();
+
+    // ---------------------------------------------------------------
+    // FEED V2: posts from specific communities within time window
+    // Excludes deleted, removed, and flagged posts
+    // ---------------------------------------------------------------
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        LEFT JOIN FETCH p.author
+        LEFT JOIN FETCH p.community
+        LEFT JOIN FETCH p.tags pt
+        LEFT JOIN FETCH pt.tag
+        WHERE p.isDeleted = false
+          AND p.isRemoved = false
+          AND p.isFlagged = false
+          AND p.community.communityId IN :communityIds
+          AND p.createdAt >= :since
+    """)
+    List<Post> findFeedPostsFromCommunities(
+        @Param("communityIds") List<Integer> communityIds,
+        @Param("since") LocalDateTime since);
+
+    // ---------------------------------------------------------------
+    // FEED V2: all public posts within time window (for public/cold-start feed)
+    // Excludes deleted, removed, and flagged posts
+    // ---------------------------------------------------------------
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        LEFT JOIN FETCH p.author
+        LEFT JOIN FETCH p.community
+        LEFT JOIN FETCH p.tags pt
+        LEFT JOIN FETCH pt.tag
+        WHERE p.isDeleted = false
+          AND p.isRemoved = false
+          AND p.isFlagged = false
+          AND p.community IS NOT NULL
+          AND p.createdAt >= :since
+    """)
+    List<Post> findAllPublicFeedPosts(@Param("since") LocalDateTime since);
+
+    // ---------------------------------------------------------------
+    // FEED V2: discovery posts from non-joined communities
+    // Ordered by community member count descending
+    // ---------------------------------------------------------------
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        LEFT JOIN FETCH p.author
+        LEFT JOIN FETCH p.community
+        LEFT JOIN FETCH p.tags pt
+        LEFT JOIN FETCH pt.tag
+        WHERE p.isDeleted = false
+          AND p.isRemoved = false
+          AND p.isFlagged = false
+          AND p.community.communityId NOT IN :joinedCommunityIds
+          AND p.createdAt >= :since
+        ORDER BY p.community.memberCount DESC, p.createdAt DESC
+    """)
+    List<Post> findDiscoveryPosts(
+        @Param("joinedCommunityIds") List<Integer> joinedCommunityIds,
+        @Param("since") LocalDateTime since);
+
+    // ---------------------------------------------------------------
+    // FEED V2: community IDs where user has liked posts (affinity)
+    // ---------------------------------------------------------------
+    @Query("""
+        SELECT DISTINCT p.community.communityId FROM Post p
+        JOIN PostLike pl ON pl.post = p
+        WHERE pl.user.userId = :userId
+          AND p.community IS NOT NULL
+    """)
+    List<Integer> findCommunityIdsWherUserLiked(@Param("userId") Integer userId);
+
+    // ---------------------------------------------------------------
+    // FEED V2: community IDs where user has commented (affinity)
+    // ---------------------------------------------------------------
+    @Query("""
+        SELECT DISTINCT p.community.communityId FROM Post p
+        JOIN Comment c ON c.post = p
+        WHERE c.author.userId = :userId
+          AND p.community IS NOT NULL
+    """)
+    List<Integer> findCommunityIdsWhereUserCommented(@Param("userId") Integer userId);
 }

@@ -9,7 +9,7 @@ public class CommentCreate {
     @NotNull(message = "Post ID is required")
     private Integer postId;
 
-    @Size(max = 1000, message = "Comment must not exceed 1000 characters")
+    @Size(max = 2000, message = "Comment must not exceed 2000 characters")
     private String contentText;
     
     @Pattern(regexp = "^https://media[0-9]*\\.giphy\\.com/.*$", message = "Invalid GIF URL")

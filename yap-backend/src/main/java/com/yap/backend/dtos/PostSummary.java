@@ -22,6 +22,7 @@ public class PostSummary {
     private boolean isLikedByCurrentUser;
     private boolean canDelete;
     private String gifUrl;
+    private String flair;
 
     public PostSummary() {}
 
@@ -30,7 +31,8 @@ public class PostSummary {
                           String communityIconUrl, PostType postType, String title,
                           String contentText, int likeCount, int commentCount,
                           LocalDateTime createdAt, List<String> tags,
-                          boolean isLikedByCurrentUser, boolean canDelete, String gifUrl) {
+                          boolean isLikedByCurrentUser, boolean canDelete, String gifUrl,
+                          String flair) {
         this.postId = postId;
         this.authorUsername = authorUsername;
         this.authorId = authorId;
@@ -48,6 +50,7 @@ public class PostSummary {
         this.isLikedByCurrentUser = isLikedByCurrentUser;
         this.canDelete = canDelete;
         this.gifUrl = gifUrl;
+        this.flair = flair;
     }
 
     public Integer getPostId() { return postId; }
@@ -67,4 +70,5 @@ public class PostSummary {
     public boolean isLikedByCurrentUser() { return isLikedByCurrentUser; }
     public boolean isCanDelete() { return canDelete; }
     public String getGifUrl() { return gifUrl; }
+    public String getFlair() { return flair; }
 }

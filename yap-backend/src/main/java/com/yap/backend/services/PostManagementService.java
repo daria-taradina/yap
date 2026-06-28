@@ -48,6 +48,7 @@ public class PostManagementService extends BaseService {
         post.setAuthor(currentUser);
         post.setContentText(dto.getContentText());
         post.setGifUrl(dto.getGifUrl());
+        post.setFlair(dto.getFlair());
         post.setPostType(dto.getPostType() != null ? dto.getPostType() : PostType.DISCUSSION);
 
         boolean isBlog = post.getPostType() == PostType.BLOG;
@@ -228,7 +229,8 @@ public class PostManagementService extends BaseService {
             tagNames,
             liked,
             canDelete,
-            post.getGifUrl()
+            post.getGifUrl(),
+            post.getFlair()
         );
     }
 }

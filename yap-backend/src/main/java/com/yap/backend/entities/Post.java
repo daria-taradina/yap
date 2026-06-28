@@ -40,6 +40,9 @@ public class Post {
     @Column(name = "gif_url")
     private String gifUrl;
 
+    @Column(length = 50)
+    private String flair;
+
     @Column(nullable = false)
     @ColumnDefault("0")
     private int likeCount = 0;
@@ -92,6 +95,9 @@ public class Post {
 
     public String getGifUrl() { return gifUrl; }
     public void setGifUrl(String gifUrl) { this.gifUrl = gifUrl; }
+
+    public String getFlair() { return flair; }
+    public void setFlair(String flair) { this.flair = flair; }
 
     public int getLikeCount() { return likeCount; }
     public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
